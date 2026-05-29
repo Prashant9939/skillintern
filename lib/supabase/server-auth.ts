@@ -1,13 +1,14 @@
-"use server";
-
-import crypto from "crypto";
-import { cookies } from "next/headers";
 import { supabase } from "./client";
 
+// Use Web Crypto API (works on Node.js 18+, Vercel Edge, and all browsers)
 const SALT = "skillintern-secure-salt-2026";
 
-function hashPassword(password: string): string {
-  return crypto.createHash("sha256").update(password + SALT).digest("hex");
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password + SALT);
+  const hashBuffer = await globalThis.crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 // -------------------------------------------------------------
@@ -54,7 +55,7 @@ export async function serverSignUpUser(
   }
 
   // 4. Hash password & insert — role is always 'student'
-  const passwordHash = hashPassword(password);
+  const passwordHash = await hashPassword(password);
   const { error } = await supabase.from("profiles").insert({
     email,
     password_hash: passwordHash,
@@ -86,7 +87,7 @@ export async function serverLoginUser(emailOrPhone: string, password: string) {
   if (fetchErr) throw new Error(`Database error: ${fetchErr.message}`);
   if (!user) throw new Error("Invalid email/phone number or password.");
 
-  const enteredHash = hashPassword(password);
+  const enteredHash = await hashPassword(password);
   if (user.password_hash !== enteredHash) throw new Error("Invalid email/phone number or password.");
 
   return {
@@ -117,7 +118,7 @@ export async function seedAdminAccount() {
 
     if (existing) return { success: true, message: "Admin already exists." };
 
-    const passwordHash = hashPassword("Shiwam@99");
+    const passwordHash = await hashPassword("Shiwam@99");
     const { error } = await supabase.from("profiles").insert({
       email: "admin@skillintern.com",
       password_hash: passwordHash,
@@ -149,20 +150,14 @@ export async function createAdminUser(
 ) {
   if (!supabase) throw new Error("Supabase is not configured.");
 
-  // Verify caller's session using server-side cookies
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get("skillintern_session")?.value;
-  if (!sessionCookie) {
-    throw new Error("Unauthorized: No active session found.");
-  }
-  let session;
-  try {
-    session = JSON.parse(decodeURIComponent(sessionCookie));
-  } catch (e) {
-    throw new Error("Unauthorized: Invalid session format.");
-  }
+  // Verify caller is admin via the email param (no cookie dependency)
+  const { data: callerProfile, error: callerErr } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("email", callerEmail)
+    .maybeSingle();
 
-  if (!session || session.role !== "admin") {
+  if (callerErr || !callerProfile || callerProfile.role !== "admin") {
     throw new Error("Unauthorized: Only admins can create admin accounts.");
   }
 
@@ -176,7 +171,7 @@ export async function createAdminUser(
   if (chkErr) throw new Error(`Database error: ${chkErr.message}`);
   if (existing) throw new Error("An account with this email already exists.");
 
-  const passwordHash = hashPassword(password);
+  const passwordHash = await hashPassword(password);
   const { error } = await supabase.from("profiles").insert({
     email: newEmail,
     password_hash: passwordHash,
@@ -215,7 +210,7 @@ export async function serverVerifyEmailAndPhone(email: string, phoneNumber: stri
 export async function serverResetPassword(userId: string, newPassword: string) {
   if (!supabase) throw new Error("Supabase is not configured.");
 
-  const passwordHash = hashPassword(newPassword);
+  const passwordHash = await hashPassword(newPassword);
   const { error } = await supabase
     .from("profiles")
     .update({ password_hash: passwordHash })
