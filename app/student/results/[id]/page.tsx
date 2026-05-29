@@ -18,10 +18,9 @@ import Link from "next/link";
 
 export default function ResultsPage() {
   const params = useParams();
-  const router = useRouter();
+  const { push } = useRouter();
   const resultId = params.id as string;
 
-  const [user, setUser] = useState<UserSession | null>(null);
   const [result, setResult] = useState<TestResult | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -31,14 +30,13 @@ export default function ResultsPage() {
       try {
         const u = await getCurrentUser();
         if (!u) {
-          router.push("/auth/login");
+          push("/auth/login");
           return;
         }
-        setUser(u);
 
         const res = await getTestResultById(resultId);
         if (!res) {
-          router.push("/student/dashboard");
+          push("/student/dashboard");
           return;
         }
         setResult(res);
@@ -51,7 +49,7 @@ export default function ResultsPage() {
       }
     }
     loadResult();
-  }, [resultId, router]);
+  }, [resultId, push]);
 
   if (loading) {
     return (
@@ -124,7 +122,7 @@ export default function ResultsPage() {
               <div className="space-y-1">
                 <h4 className="text-xs font-bold text-zinc-900">Your Internship Documents Are Ready!</h4>
                 <p className="text-zinc-550 text-xs font-light leading-relaxed">
-                  All your personalized documents—including your <strong>Offer Letter</strong>, <strong>Internship Certificate</strong>, and <strong>Project Report</strong>—are available for viewing, verification, and printing.
+                  All your personalized documents (including your <strong>Offer Letter</strong>, <strong>Internship Certificate</strong>, and <strong>Project Report</strong>) are available for viewing, verification, and printing.
                 </p>
                 <div className="pt-2">
                   <Link

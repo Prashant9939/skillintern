@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Compass, Eye, ShieldCheck } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "About Us | SkillIntern",
+  description: "Learn more about SkillIntern's mission to bridge the gap between academic education and industry readiness.",
+};
 
 export default function About() {
   const values = [
@@ -48,10 +54,10 @@ export default function About() {
 
         {/* Values grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-          {values.map((v, idx) => {
+          {values.map((v) => {
             const Icon = v.icon;
             return (
-              <div key={idx} className="glass-panel rounded-3xl p-8 flex flex-col items-center text-center">
+              <div key={v.title} className="glass-panel rounded-3xl p-8 flex flex-col items-center text-center">
                 <div className={`p-4 rounded-2xl border border-zinc-200/50 mb-6 ${v.bgColor} ${v.color}`}>
                   <Icon className="h-6 w-6" />
                 </div>

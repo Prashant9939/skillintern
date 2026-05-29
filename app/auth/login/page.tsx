@@ -82,12 +82,13 @@ export default function Login() {
           <form onSubmit={handleLogin} className="space-y-4">
             {/* Email Address */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider block">
+              <label htmlFor="email" className="text-xs font-semibold text-zinc-500 uppercase tracking-wider block">
                 Email Address
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                 <input
+                  id="email"
                   type="email"
                   required
                   value={email}
@@ -101,7 +102,7 @@ export default function Login() {
             {/* Password */}
             <div className="space-y-2">
               <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider block">
+                <label htmlFor="password" className="text-xs font-semibold text-zinc-500 uppercase tracking-wider block">
                   Password
                 </label>
                 <Link
@@ -114,6 +115,7 @@ export default function Login() {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                 <input
+                  id="password"
                   type={showPassword ? "text" : "password"}
                   required
                   value={password}
@@ -135,7 +137,7 @@ export default function Login() {
                 </button>
               </div>
               <p className="text-[10px] text-zinc-400 mt-2 leading-relaxed">
-                Admin login — email: <span className="text-indigo-600 font-bold">admin@skillintern.com</span>, password: <span className="text-indigo-600 font-bold">Shiwam@99</span>
+                Admin login (email: <span className="text-indigo-600 font-bold">admin@skillintern.com</span>, password: <span className="text-indigo-600 font-bold">Shiwam@99</span>)
               </p>
             </div>
 

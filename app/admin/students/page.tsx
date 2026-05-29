@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getAllProfiles, getTestResults, TestResult } from "@/lib/supabase/db";
 import { getCurrentUser, createAdminUser, UserSession } from "@/lib/supabase/auth";
 import {
@@ -24,7 +24,7 @@ import {
 import Link from "next/link";
 
 export default function RegisteredStudents() {
-  const [currentUser, setCurrentUser] = useState<UserSession | null>(null);
+  const currentUserRef = useRef<UserSession | null>(null);
   const [profiles, setProfiles] = useState<any[]>([]);
   const [results, setResults] = useState<TestResult[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +53,7 @@ export default function RegisteredStudents() {
           getAllProfiles(),
           getTestResults(),
         ]);
-        setCurrentUser(user);
+        currentUserRef.current = user;
         setProfiles(profileList);
         setResults(testLogs);
       } catch (err) {
@@ -67,12 +67,12 @@ export default function RegisteredStudents() {
 
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentUser) return;
+    if (!currentUserRef.current) return;
     setAdminCreating(true);
     setAdminMsg("");
     try {
       await createAdminUser(
-        currentUser.email,
+        currentUserRef.current.email,
         adminForm.email,
         adminForm.password,
         adminForm.fullName,
@@ -243,13 +243,13 @@ export default function RegisteredStudents() {
                     <td className="px-5 py-4">
                       <span className="flex items-center gap-1.5">
                         <Phone className="h-3.5 w-3.5 text-indigo-550 shrink-0" />
-                        {profile.phone_number || "—"}
+                        {profile.phone_number || "N/A"}
                       </span>
                     </td>
                     <td className="px-5 py-4">
                       <span className="flex items-center gap-1.5">
                         <BookOpen className="h-3.5 w-3.5 text-indigo-550 shrink-0" />
-                        <span className="max-w-[160px] truncate font-medium">{profile.department_stream || "—"}</span>
+                        <span className="max-w-[160px] truncate font-medium">{profile.department_stream || "N/A"}</span>
                       </span>
                     </td>
                     <td className="px-5 py-4">
@@ -266,7 +266,7 @@ export default function RegisteredStudents() {
                       )}
                     </td>
                     <td className="px-5 py-4 text-zinc-400">
-                      {profile.created_at ? new Date(profile.created_at).toLocaleDateString() : "—"}
+                      {profile.created_at ? new Date(profile.created_at).toLocaleDateString() : "N/A"}
                     </td>
                   </tr>
                 ))}
@@ -307,7 +307,7 @@ export default function RegisteredStudents() {
                           {res.reference_number}
                         </span>
                       ) : (
-                        <span className="text-zinc-350 text-[10px] italic">—</span>
+                        <span className="text-zinc-350 text-[10px] italic">N/A</span>
                       )}
                     </td>
                     <td className="px-6 py-4">{res.score} / {res.total_questions}</td>
@@ -366,8 +366,9 @@ export default function RegisteredStudents() {
 
             <form onSubmit={handleAddAdmin} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Full Name</label>
+                <label htmlFor="admin-fullName" className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Full Name</label>
                 <input
+                  id="admin-fullName"
                   type="text"
                   required
                   value={adminForm.fullName}
@@ -378,8 +379,9 @@ export default function RegisteredStudents() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Email Address</label>
+                <label htmlFor="admin-email" className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Email Address</label>
                 <input
+                  id="admin-email"
                   type="email"
                   required
                   value={adminForm.email}
@@ -391,8 +393,9 @@ export default function RegisteredStudents() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Phone</label>
+                  <label htmlFor="admin-phone" className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Phone</label>
                   <input
+                    id="admin-phone"
                     type="tel"
                     required
                     value={adminForm.phone}
@@ -402,8 +405,9 @@ export default function RegisteredStudents() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Department</label>
+                  <label htmlFor="admin-dept" className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Department</label>
                   <input
+                    id="admin-dept"
                     type="text"
                     required
                     value={adminForm.departmentStream}
@@ -415,10 +419,11 @@ export default function RegisteredStudents() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Password</label>
+                <label htmlFor="admin-pwd" className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-450" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-455" />
                   <input
+                    id="admin-pwd"
                     type={showAdminPwd ? "text" : "password"}
                     required
                     value={adminForm.password}

@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Award, ShieldCheck, Zap, Users, GraduationCap, ChevronRight } from "lucide-react";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Home | SkillIntern",
+  description: "SkillIntern is a secure certification verification platform for internships, providing test scorecards and credentials.",
+};
 
 export default function Home() {
   const stats = [
@@ -48,9 +54,9 @@ export default function Home() {
             <Award className="h-3.5 w-3.5 text-indigo-500" /> Empowering Next-Gen Talent
           </div>
           
-          <h1 className="text-4xl sm:text-7xl font-extrabold tracking-tight bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-600 bg-clip-text text-transparent max-w-5xl mx-auto leading-[1.15] mb-6">
+          <h1 className="text-4xl sm:text-7xl font-extrabold tracking-tight text-zinc-900 max-w-5xl mx-auto leading-[1.15] mb-6">
             Validate Your Expertise.<br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-700 bg-clip-text text-transparent">
+            <span className="text-indigo-600">
               Earn Verified Certifications.
             </span>
           </h1>
@@ -79,10 +85,10 @@ export default function Home() {
         {/* STATISTICS SECTION */}
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.map((stat, idx) => {
+            {stats.map((stat) => {
               const Icon = stat.icon;
               return (
-                <div key={idx} className="glass-panel rounded-3xl p-6 relative overflow-hidden flex flex-col justify-between">
+                <div key={stat.label} className="glass-panel rounded-3xl p-6 relative overflow-hidden flex flex-col justify-between">
                   <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-indigo-500/5 blur-xl pointer-events-none" />
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-zinc-500 text-xs font-semibold uppercase tracking-wider">{stat.label}</span>
@@ -109,10 +115,10 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map((feat, idx) => {
+            {features.map((feat) => {
               const Icon = feat.icon;
               return (
-                <div key={idx} className="glass-card rounded-3xl p-8 flex flex-col justify-between">
+                <div key={feat.title} className="glass-card rounded-3xl p-8 flex flex-col justify-between">
                   <div>
                     <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/5 border border-indigo-500/10 text-indigo-600 shadow-sm">
                       <Icon className="h-6 w-6" />

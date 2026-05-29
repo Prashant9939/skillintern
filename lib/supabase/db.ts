@@ -302,14 +302,12 @@ export async function saveInternship(internship: Omit<Internship, "id"> & { id?:
 export async function deleteInternship(id: string): Promise<boolean> {
   if (isSupabaseConfigured() && supabase) {
     try {
-      // 1. Delete dependent questions
-      await supabase.from("questions").delete().eq("internship_id", id);
-      
-      // 3. Delete dependent documents
-      await supabase.from("documents").delete().eq("internship_id", id);
-      
-      // 4. Delete dependent test results
-      await supabase.from("test_results").delete().eq("internship_id", id);
+      // 1. Delete dependent records in parallel
+      await Promise.all([
+        supabase.from("questions").delete().eq("internship_id", id),
+        supabase.from("documents").delete().eq("internship_id", id),
+        supabase.from("test_results").delete().eq("internship_id", id)
+      ]);
 
       // 5. Finally delete the internship track
       const { error } = await supabase.from("internships").delete().eq("id", id);
@@ -858,19 +856,23 @@ export async function getDocumentTemplates(): Promise<DocumentTemplate[]> {
       if (!data || data.length === 0) {
         // Database is empty, let's seed default templates
         const seeded = await getMockDocumentTemplates();
-        // Try to insert them into Supabase
-        for (const t of seeded) {
-          try {
-            await supabase.from("document_templates").insert({
-              code: t.code,
-              name: t.name,
-              html_content: t.html_content,
-              is_visible: t.is_visible
-            });
-          } catch (insertErr) {
-            console.error("Failed to seed template to database:", insertErr);
-          }
-        }
+        const client = supabase;
+        if (!client) return seeded;
+        // Try to insert them into Supabase in parallel
+        await Promise.all(
+          seeded.map(async (t) => {
+            try {
+              await client.from("document_templates").insert({
+                code: t.code,
+                name: t.name,
+                html_content: t.html_content,
+                is_visible: t.is_visible
+              });
+            } catch (insertErr) {
+              console.error("Failed to seed template to database:", insertErr);
+            }
+          })
+        );
         return seeded;
       }
       
@@ -909,30 +911,31 @@ async function seedDefaultTemplatesFromFiles(): Promise<DocumentTemplate[]> {
     project_report: "project_report.html"
   };
   
-  const templates: DocumentTemplate[] = [];
-  for (const code of codes) {
-    let html = "";
-    try {
-      const res = await fetch(`/templates/${files[code]}`);
-      if (res.ok) {
-        html = await res.text();
-      } else {
-        throw new Error(`Fetch status ${res.status}`);
+  const templates = await Promise.all(
+    codes.map(async (code) => {
+      let html = "";
+      try {
+        const res = await fetch(`/templates/${files[code]}`);
+        if (res.ok) {
+          html = await res.text();
+        } else {
+          throw new Error(`Fetch status ${res.status}`);
+        }
+      } catch (e) {
+        console.warn(`Could not fetch template file for ${code}, using fallback:`, e);
+        html = `<!DOCTYPE html><html><body style="font-family: sans-serif; padding: 40px; background: #fafafa;"><div style="background: white; padding: 40px; max-width: 600px; margin: auto; border: 1px solid #ccc; border-radius: 8px;"><h1>Internship ${names[code]}</h1><hr/><p>Student Name: <strong>{{STUDENT_NAME}}</strong></p><p>College Name: <strong>{{COLLEGE_NAME}}</strong></p><p>Internship Track: <strong>{{INTERNSHIP_TITLE}}</strong></p><p>Grade: <strong>{{GRADE}}</strong></p><p>Verification ID: <strong>{{VERIFICATION_ID}}</strong></p></div></body></html>`;
       }
-    } catch (e) {
-      console.warn(`Could not fetch template file for ${code}, using fallback:`, e);
-      html = `<!DOCTYPE html><html><body style="font-family: sans-serif; padding: 40px; background: #fafafa;"><div style="background: white; padding: 40px; max-width: 600px; margin: auto; border: 1px solid #ccc; border-radius: 8px;"><h1>Internship ${names[code]}</h1><hr/><p>Student Name: <strong>{{STUDENT_NAME}}</strong></p><p>College Name: <strong>{{COLLEGE_NAME}}</strong></p><p>Internship Track: <strong>{{INTERNSHIP_TITLE}}</strong></p><p>Grade: <strong>{{GRADE}}</strong></p><p>Verification ID: <strong>{{VERIFICATION_ID}}</strong></p></div></body></html>`;
-    }
-    
-    templates.push({
-      id: `dt-${code}`,
-      code,
-      name: names[code],
-      html_content: html,
-      is_visible: true,
-      updated_at: new Date().toISOString()
-    });
-  }
+      
+      return {
+        id: `dt-${code}`,
+        code,
+        name: names[code],
+        html_content: html,
+        is_visible: true,
+        updated_at: new Date().toISOString()
+      };
+    })
+  );
   return templates;
 }
 
