@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Megaphone,
   Plus,
@@ -10,95 +10,160 @@ import {
   CheckCircle,
   X,
 } from "lucide-react";
-
-type Announcement = {
-  id: string;
-  title: string;
-  message: string;
-  type: "info" | "warning" | "success";
-  createdAt: string;
-  active: boolean;
-};
-
-const mockAnnouncements: Announcement[] = [
-  {
-    id: "1",
-    title: "Platform Maintenance Scheduled",
-    message: "Scheduled maintenance on June 25th, 2026 from 2:00 AM to 6:00 AM IST. The platform may be temporarily unavailable.",
-    type: "warning",
-    createdAt: "2026-06-18",
-    active: true,
-  },
-  {
-    id: "2",
-    title: "New Internship Tracks Available",
-    message: "We have added 5 new internship tracks including AI/ML, Cloud Computing, and DevOps. Enroll now!",
-    type: "info",
-    createdAt: "2026-06-15",
-    active: true,
-  },
-  {
-    id: "3",
-    title: "Assessment System Upgrade Complete",
-    message: "The assessment system has been upgraded with improved security and faster loading times.",
-    type: "success",
-    createdAt: "2026-06-10",
-    active: false,
-  },
-];
+import {
+  getAnnouncements,
+  saveAnnouncement,
+  deleteAnnouncementDb,
+  Announcement,
+} from "@/lib/supabase/db";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 
 export default function AnnouncementsPage() {
-  const [announcements, setAnnouncements] = useState<Announcement[]>(mockAnnouncements);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newMessage, setNewMessage] = useState("");
   const [newType, setNewType] = useState<"info" | "warning" | "success">("info");
+  const [newPriority, setNewPriority] = useState<"low" | "medium" | "high">("medium");
 
-  const handleCreate = () => {
+  const fetchAnnouncements = async () => {
+    try {
+      const data = await getAnnouncements(false);
+      setAnnouncements(data);
+    } catch (err) {
+      console.error("Error fetching announcements:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAnnouncements();
+
+    // Supabase real-time updates
+    if (isSupabaseConfigured() && supabase) {
+      const channel = supabase
+        .channel("admin-announcements-channel")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "announcements" },
+          () => {
+            fetchAnnouncements();
+          }
+        )
+        .subscribe();
+      return () => {
+        if (supabase) {
+          supabase.removeChannel(channel);
+        }
+      };
+    }
+
+    // Storage event for mock sync across tabs
+    const handleStorageChange = () => {
+      fetchAnnouncements();
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
+  const handleCreate = async () => {
     if (!newTitle.trim() || !newMessage.trim()) {
       alert("Please fill in both title and message.");
       return;
     }
-    const newAnnouncement: Announcement = {
-      id: Date.now().toString(),
-      title: newTitle,
-      message: newMessage,
-      type: newType,
-      createdAt: new Date().toISOString().split("T")[0],
-      active: true,
-    };
-    setAnnouncements([newAnnouncement, ...announcements]);
-    setNewTitle("");
-    setNewMessage("");
-    setNewType("info");
-    setShowCreateForm(false);
+    try {
+      await saveAnnouncement({
+        title: newTitle.trim(),
+        description: newMessage.trim(),
+        type: newType,
+        priority: newPriority,
+        active: true,
+      });
+      setNewTitle("");
+      setNewMessage("");
+      setNewType("info");
+      setNewPriority("medium");
+      setShowCreateForm(false);
+      fetchAnnouncements();
+    } catch (err) {
+      alert("Failed to save announcement.");
+    }
   };
 
-  const toggleActive = (id: string) => {
-    setAnnouncements(prev =>
-      prev.map(a => a.id === id ? { ...a, active: !a.active } : a)
-    );
+  const toggleActive = async (id: string) => {
+    const ann = announcements.find((a) => a.id === id);
+    if (!ann) return;
+    try {
+      await saveAnnouncement({
+        ...ann,
+        active: !ann.active,
+      });
+      fetchAnnouncements();
+    } catch (err) {
+      alert("Failed to update announcement.");
+    }
   };
 
-  const deleteAnnouncement = (id: string) => {
-    setAnnouncements(prev => prev.filter(a => a.id !== id));
+  const deleteAnnouncement = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this announcement?")) return;
+    try {
+      await deleteAnnouncementDb(id);
+      fetchAnnouncements();
+    } catch (err) {
+      alert("Failed to delete announcement.");
+    }
   };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case "warning": return AlertCircle;
-      case "success": return CheckCircle;
-      default: return Info;
+      case "warning":
+        return AlertCircle;
+      case "success":
+        return CheckCircle;
+      default:
+        return Info;
     }
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "warning": return "bg-amber-500/10 text-amber-500 border-amber-200";
-      case "success": return "bg-emerald-500/10 text-emerald-500 border-emerald-200";
-      default: return "bg-[#5B5FF7]/10 text-[#5B5FF7] border-[#5B5FF7]/20";
+      case "warning":
+        return "bg-amber-500/10 text-amber-500 border-amber-200";
+      case "success":
+        return "bg-emerald-500/10 text-emerald-500 border-emerald-200";
+      default:
+        return "bg-[#5B5FF7]/10 text-[#5B5FF7] border-[#5B5FF7]/20";
     }
   };
+
+  const formatDate = (dateStr: string) => {
+    try {
+      return new Date(dateStr).toLocaleDateString("en-US", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (e) {
+      return dateStr;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#5B5FF7] border-t-transparent mx-auto" />
+          <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Loading announcements...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-fade-in text-zinc-800 pb-10">
@@ -145,32 +210,60 @@ export default function AnnouncementsPage() {
                 className="w-full px-4 py-3 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#5B5FF7]/20 focus:border-[#5B5FF7]/40 transition-all resize-none"
               />
             </div>
-            <div>
-              <label className="text-xs font-bold text-zinc-600 block mb-1.5">Type</label>
-              <div className="flex gap-3">
-                {(["info", "warning", "success"] as const).map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setNewType(type)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer capitalize ${
-                      newType === type
-                        ? "bg-[#5B5FF7] text-white border-[#5B5FF7]"
-                        : "bg-white text-zinc-600 border-zinc-200 hover:border-[#5B5FF7]/30"
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-bold text-zinc-600 block mb-1.5">Type</label>
+                <div className="flex gap-3">
+                  {(["info", "warning", "success"] as const).map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setNewType(type)}
+                      className={`px-4 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer capitalize ${
+                        newType === type
+                          ? "bg-[#5B5FF7] text-white border-[#5B5FF7]"
+                          : "bg-white text-zinc-600 border-zinc-200 hover:border-[#5B5FF7]/30"
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-zinc-600 block mb-1.5">Priority</label>
+                <div className="flex gap-3">
+                  {(["low", "medium", "high"] as const).map((priority) => (
+                    <button
+                      key={priority}
+                      type="button"
+                      onClick={() => setNewPriority(priority)}
+                      className={`px-4 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer capitalize ${
+                        newPriority === priority
+                          ? priority === "high"
+                            ? "bg-rose-500 text-white border-rose-500"
+                            : priority === "medium"
+                            ? "bg-amber-500 text-white border-amber-500"
+                            : "bg-[#5B5FF7] text-white border-[#5B5FF7]"
+                          : "bg-white text-zinc-600 border-zinc-200 hover:border-[#5B5FF7]/30"
+                      }`}
+                    >
+                      {priority}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
             <div className="flex gap-3 pt-2">
               <button
+                type="button"
                 onClick={handleCreate}
                 className="bg-[#5B5FF7] hover:bg-[#4A4EE6] text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md transition-all cursor-pointer"
               >
                 Publish Announcement
               </button>
               <button
+                type="button"
                 onClick={() => setShowCreateForm(false)}
                 className="bg-white border border-zinc-200 text-zinc-600 text-xs font-bold px-5 py-2.5 rounded-xl hover:bg-zinc-50 transition-all cursor-pointer"
               >
@@ -196,7 +289,9 @@ export default function AnnouncementsPage() {
             return (
               <div
                 key={ann.id}
-                className={`bg-white border border-zinc-150/80 rounded-[20px] p-6 shadow-xs hover:shadow-md transition-all duration-300 ${!ann.active ? "opacity-50" : ""}`}
+                className={`bg-white border border-zinc-150/80 rounded-[20px] p-6 shadow-xs hover:shadow-md transition-all duration-300 ${
+                  !ann.active ? "opacity-50" : ""
+                }`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4 min-w-0">
@@ -204,27 +299,46 @@ export default function AnnouncementsPage() {
                       <TypeIcon className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-sm font-bold text-zinc-900">{ann.title}</h3>
-                        <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${ann.active ? "bg-emerald-100 text-emerald-700" : "bg-zinc-100 text-zinc-500"}`}>
-                          {ann.active ? "Active" : "Inactive"}
-                        </span>
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <h3 className="text-sm font-bold text-zinc-900 leading-snug">{ann.title}</h3>
+                        <div className="flex gap-1.5">
+                          <span
+                            className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                              ann.active ? "bg-emerald-100 text-emerald-700" : "bg-zinc-100 text-zinc-500"
+                            }`}
+                          >
+                            {ann.active ? "Active" : "Inactive"}
+                          </span>
+                          <span
+                            className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                              ann.priority === "high"
+                                ? "bg-rose-100 text-rose-700"
+                                : ann.priority === "medium"
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-blue-100 text-blue-750"
+                            }`}
+                          >
+                            {ann.priority}
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-xs text-zinc-500 font-light leading-relaxed">{ann.message}</p>
+                      <p className="text-xs text-zinc-500 font-light leading-relaxed">{ann.description}</p>
                       <div className="flex items-center gap-1.5 mt-2 text-[10px] text-zinc-400 font-bold">
                         <Calendar className="h-3 w-3" />
-                        {ann.createdAt}
+                        {formatDate(ann.created_at)}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button
+                      type="button"
                       onClick={() => toggleActive(ann.id)}
                       className="text-xs font-bold px-3 py-1.5 rounded-lg border border-zinc-200 hover:bg-slate-50 transition-all cursor-pointer text-zinc-600"
                     >
                       {ann.active ? "Deactivate" : "Activate"}
                     </button>
                     <button
+                      type="button"
                       onClick={() => deleteAnnouncement(ann.id)}
                       className="p-1.5 rounded-lg border border-zinc-200 hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all cursor-pointer text-zinc-400"
                     >

@@ -89,7 +89,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const active = sessionStorage.getItem("admin_student_view_active") === "true" || user?.email === "admin@skillintern.com";
+      const active = sessionStorage.getItem("admin_student_view_active") === "true" || user?.email === "admin@ugintern.com";
       setIsAdminImpersonating(active);
     }
   }, [user]);
@@ -107,7 +107,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     { name: "Documents", href: "/student/documents", icon: FileText },
     { name: "Progress", href: "/student/progress", icon: LineChart },
     { name: "Settings", href: "/student/profile", icon: Settings },
-    { name: "Help & Support", href: "/contact", icon: HelpCircle },
+    { name: "Help & Support", href: "/dashboard/help-support", icon: HelpCircle },
   ];
 
   if (loading) {
@@ -123,8 +123,10 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
   if (!user) return null;
 
+  const logoHref = user.role === "admin" ? "/admin/dashboard" : "/student/dashboard";
+
   return (
-    <div className="h-screen bg-[#FAFAFC] text-zinc-800 relative flex flex-col font-sans selection:bg-indigo-500/20 selection:text-indigo-800 overflow-hidden">
+    <div className="h-[100dvh] bg-[#FAFAFC] text-zinc-800 relative flex flex-col font-sans selection:bg-indigo-500/20 selection:text-indigo-800 overflow-hidden">
       {/* Background Grid */}
       <div className="absolute inset-0 bg-grid-pattern opacity-40 pointer-events-none" />
       <div className="absolute top-0 right-0 h-[500px] w-[500px] rounded-full bg-indigo-500/5 blur-[120px] pointer-events-none" />
@@ -132,12 +134,13 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
       {/* Full Screen Top Header */}
       <header className="hidden md:flex h-18 items-center justify-between px-8 border-b border-zinc-150/85 bg-white shrink-0 sticky top-0 z-40">
         <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#5B5FF7] to-[#7B7FFA] font-extrabold text-white shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-all">
-              SI
-            </div>
+          <Link href={logoHref} className="flex items-center gap-2.5 group">
+            <img 
+              src="/logo-icon.png" 
+              className="h-8 w-auto object-contain group-hover:scale-105 transition-all" 
+            />
             <div className="text-left">
-              <h1 className="text-zinc-900 text-base font-bold leading-none">SkillIntern</h1>
+              <h1 className="text-zinc-900 text-base font-bold leading-none">UG Intern</h1>
               <p className="text-[9px] uppercase tracking-widest text-[#64748B] mt-1 font-bold">DASHBOARD</p>
             </div>
           </Link>
@@ -202,11 +205,11 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
       {/* Mobile Sticky Header */}
       <header className="sticky top-0 z-30 md:hidden flex h-16 w-full items-center justify-between border-b border-zinc-200/80 bg-white/95 backdrop-blur px-4 shadow-sm shrink-0">
-        <Link href="/" className="flex items-center gap-2 font-bold text-zinc-900">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#5B5FF7] font-extrabold text-white shadow-md shadow-indigo-500/10">
-            SI
-          </div>
-          <span className="text-base font-semibold">Skill<span className="text-[#5B5FF7] font-extrabold">Intern</span></span>
+        <Link href={logoHref} className="flex items-center gap-2 font-bold text-zinc-900">
+          <img 
+            src="/logo-icon.png" 
+            className="h-10 w-auto object-contain" 
+          />
         </Link>
         <button
           onClick={() => setMobileMenuOpen(true)}
@@ -232,9 +235,11 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
       `}>
         <div className="flex h-16 items-center justify-between px-6 border-b border-zinc-200/60 shrink-0">
-          <Link href="/" className="flex items-center gap-2 font-bold text-zinc-800" onClick={() => setMobileMenuOpen(false)}>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#5B5FF7] font-extrabold text-white">SI</div>
-            <span>Skill<span className="text-[#5B5FF7] font-extrabold">Intern</span></span>
+          <Link href={logoHref} className="flex items-center gap-2 font-bold text-zinc-800" onClick={() => setMobileMenuOpen(false)}>
+            <img 
+              src="/logo-icon.png" 
+              className="h-9 w-auto object-contain" 
+            />
           </Link>
           <button
             onClick={() => setMobileMenuOpen(false)}
@@ -248,7 +253,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         <nav className="flex-grow p-4 space-y-1.5 overflow-y-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const active = pathname === item.href;
+            const active = pathname === item.href || (item.href === "/dashboard/help-support" && pathname === "/student/dashboard/help-support");
             return (
               <Link
                 key={item.name}
@@ -301,7 +306,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           <nav className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const active = pathname === item.href;
+              const active = pathname === item.href || (item.href === "/dashboard/help-support" && pathname === "/student/dashboard/help-support");
               return (
                 <Link
                   key={item.name}

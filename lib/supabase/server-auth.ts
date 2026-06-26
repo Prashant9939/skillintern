@@ -1,3 +1,5 @@
+"use server";
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -6,9 +8,10 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { supabase } from "./client";
 import bcrypt from "bcryptjs";
+import { sendWelcomeEmail } from "@/lib/email/sendWelcomeEmail";
 
 // Use Web Crypto API for legacy hash compatibility
-const SALT = "skillintern-secure-salt-2026";
+const SALT = "ugintern-secure-salt-2026";
 
 async function legacyHashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -39,7 +42,23 @@ export async function serverSignUpUser(
   email: string,
   password: string,
   fullName: string,
-  phoneNumber: string
+  phoneNumber: string,
+  college: string,
+  university: string,
+  course: string,
+  semester: string,
+  address: string,
+  documentId: string,
+  departmentStream: string,
+  batch: string,
+  rollNumber: string,
+  registrationNumber: string,
+  emergencyContactName: string,
+  emergencyContactNumber: string,
+  emergencyContactRelation: string,
+  agreedTerms: boolean,
+  agreedUpdates: boolean,
+  dateOfBirth: string
 ) {
   if (!supabase) throw new Error("Supabase is not configured.");
 
@@ -49,7 +68,7 @@ export async function serverSignUpUser(
   }
 
   // 1. Block the reserved admin email from public sign-up
-  if (email.toLowerCase() === "admin@skillintern.com") {
+  if (email.toLowerCase() === "admin@ugintern.com") {
     throw new Error("This email address is reserved. Please use a different email.");
   }
 
@@ -72,24 +91,55 @@ export async function serverSignUpUser(
   if (phoneCheckErr) throw new Error(`Database error: ${phoneCheckErr.message}`);
 
   if (existingEmailUser && existingPhoneUser) {
-    throw new Error("An account already exists with these credentials.");
+    throw new Error("Both your email and phone number already exist in the database.");
   } else if (existingEmailUser) {
-    throw new Error("An account with this email already exists.");
+    throw new Error("Your email already exists in the database.");
   } else if (existingPhoneUser) {
-    throw new Error("An account with this phone number already exists.");
+    throw new Error("Your phone number already exists in the database.");
   }
 
   // 4. Hash password & insert — role is always 'student'
   const passwordHash = await hashPassword(password);
-  const { error } = await supabase.from("profiles").insert({
-    email,
-    password_hash: passwordHash,
-    full_name: fullName,
-    phone_number: phoneNumber,
-    role: "student",
-  });
+  const { data: newUser, error } = await supabase
+    .from("profiles")
+    .insert({
+      email,
+      password_hash: passwordHash,
+      full_name: fullName,
+      phone_number: phoneNumber,
+      college_name: college,
+      university_name: university,
+      degree: course,
+      semester: semester,
+      academic_session: batch,
+      department_stream: departmentStream,
+      roll_number: rollNumber,
+      registration_number: registrationNumber,
+      full_address: address,
+      document_id: documentId,
+      emergency_contact_name: emergencyContactName,
+      emergency_contact_number: emergencyContactNumber,
+      emergency_contact_relation: emergencyContactRelation,
+      agreed_terms: agreedTerms,
+      agreed_updates: agreedUpdates,
+      date_of_birth: dateOfBirth,
+      role: "student",
+      profile_completed: true,
+    })
+    .select("id")
+    .single();
 
   if (error) throw new Error(`Registration failed: ${error.message}`);
+
+  // Trigger welcome email in the background (non-blocking)
+  sendWelcomeEmail({
+    email,
+    fullName,
+    userId: newUser?.id
+  }).catch((err) => {
+    console.error("Welcome email background task failed:", err);
+  });
+
   return { success: true };
 }
 
@@ -148,17 +198,44 @@ export async function seedAdminAccount() {
   if (!supabase) return { success: false, message: "Supabase not configured." };
 
   try {
-    const { data: existing } = await supabase
+    // 1. Check if old admin email exists and migrate it
+    const { data: oldAdmin } = await supabase
       .from("profiles")
       .select("id")
       .ilike("email", "admin@skillintern.com")
+      .maybeSingle();
+
+    if (oldAdmin) {
+      const passwordHash = await hashPassword("Shiwam@99");
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          email: "admin@ugintern.com",
+          password_hash: passwordHash,
+          full_name: "Super Admin",
+          phone_number: "0000000000",
+          department_stream: "Platform Administration",
+          role: "admin",
+          profile_completed: true,
+        })
+        .eq("id", oldAdmin.id);
+
+      if (error) throw new Error(error.message);
+      return { success: true, message: "Admin account migrated successfully." };
+    }
+
+    // 2. Check if new admin email already exists
+    const { data: existing } = await supabase
+      .from("profiles")
+      .select("id")
+      .ilike("email", "admin@ugintern.com")
       .maybeSingle();
 
     if (existing) return { success: true, message: "Admin already exists." };
 
     const passwordHash = await hashPassword("Shiwam@99");
     const { error } = await supabase.from("profiles").insert({
-      email: "admin@skillintern.com",
+      email: "admin@ugintern.com",
       password_hash: passwordHash,
       full_name: "Super Admin",
       phone_number: "0000000000",

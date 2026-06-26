@@ -92,7 +92,7 @@ export default function Home() {
   ];
 
   const timelineSteps = [
-    { num: "01", title: "Registration", desc: "Create your secure candidate profile on the SkillIntern platform in under 2 minutes." },
+    { num: "01", title: "Registration", desc: "Create your secure candidate profile on the UG Intern platform in under 2 minutes." },
     { num: "02", title: "Profile Completion", desc: "Provide your institutional records, college stream, roll number, and credentials." },
     { num: "03", title: "Internship Selection", desc: "Browse and choose from our 25+ industry-aligned career tracks spanning multiple domains." },
     { num: "04", title: "Learning Access", desc: "Unlock curriculum guidelines, project requirements, and industry-oriented reference checklists." },
@@ -103,12 +103,12 @@ export default function Home() {
   ];
 
   const faqs = [
-    { q: "What is the typical internship duration on SkillIntern?", a: "Most of our standard career tracks are designed to span between 6 to 16 weeks (typically 3 months), requiring approximately 120 hours of curriculum work and project validation." },
+    { q: "What is the typical internship duration on UG Intern?", a: "Most of our standard career tracks are designed to span between 6 to 16 weeks (typically 3 months), requiring approximately 120 hours of curriculum work and project validation." },
     { q: "How are the certificates verified?", a: "Every certificate issued contains a unique secure Verification ID. Employers can enter this ID on our homepage verification widget, or scan the embedded QR code to retrieve digital verification directly from our secure database." },
     { q: "What is the assessment process?", a: "Assessments consist of timed 5-minute MCQ tests covering core engineering, business, and design concepts. You must score 40% or higher to pass. If you fail, you can review the guidelines and retake the test." },
-    { q: "Can academic institutions partner with SkillIntern?", a: "Yes. Colleges can establish partnership hubs to access bulk student uploads, group metrics, attendance tracking, and consolidated certificate verification templates. Use the 'Contact Team' form to get started." },
+    { q: "Can academic institutions partner with UG Intern?", a: "Yes. Colleges can establish partnership hubs to access bulk student uploads, group metrics, attendance tracking, and consolidated certificate verification templates. Use the 'Contact Team' form to get started." },
     { q: "What is your refund policy?", a: "Since all certifications and downloadable scorecards are delivered digitally upon passing assessments, please refer to our general terms or contact support for billing clarifications." },
-    { q: "Are the credentials recognized by employers?", a: "Yes. SkillIntern provides tamper-proof, verified digital credentials that detail the student's actual test score and project validations, providing concrete proof of competence that recruiters appreciate." }
+    { q: "Are the credentials recognized by employers?", a: "Yes. UG Intern provides tamper-proof, verified digital credentials that detail the student's actual test score and project validations, providing concrete proof of competence that recruiters appreciate." }
   ];
 
   const documentItems = [
@@ -338,7 +338,7 @@ export default function Home() {
                     <span className="h-3 w-3 rounded-full bg-amber-400" />
                     <span className="h-3 w-3 rounded-full bg-emerald-400" />
                   </div>
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">SkillIntern Dashboard</span>
+                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">UG Intern Dashboard</span>
                   <span className="h-5 w-16 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[9px] text-indigo-650 font-bold uppercase">Mock View</span>
                 </div>
 
@@ -395,7 +395,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* COMPARISON: TRADITIONAL VS SKILLINTERN */}
+        {/* COMPARISON: TRADITIONAL VS UGINTERN */}
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 relative z-10 border-t border-zinc-200/60 mt-12">
           <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
             <span className="text-xs text-indigo-650 font-bold uppercase tracking-wider bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">Methodology comparison</span>
@@ -403,7 +403,7 @@ export default function Home() {
               A Shift Toward Practical Competence
             </h2>
             <p className="text-zinc-500 text-sm sm:text-base font-light">
-              Traditional certificates verify attendance; SkillIntern certifies actual skill validation and performance scores.
+              Traditional certificates verify attendance; UG Intern certifies actual skill validation and performance scores.
             </p>
           </div>
 
@@ -429,10 +429,10 @@ export default function Home() {
               </ul>
             </div>
 
-            {/* SkillIntern learning card */}
+            {/* UG Intern learning card */}
             <div className="glass-panel border border-emerald-250 bg-emerald-50/5 rounded-3xl p-6 sm:p-8 space-y-6 shadow-md shadow-emerald-500/5">
               <h3 className="text-base font-bold text-emerald-650 uppercase tracking-wider flex items-center gap-2">
-                The SkillIntern Standard
+                The UG Intern Standard
               </h3>
               <ul className="space-y-4">
                 {[
@@ -793,7 +793,7 @@ export default function Home() {
                   Every successful candidate qualifies for unified document packages including an **Offer Letter**, **Verified Certificate**, and **Project Report**. Credentials can be digitally parsed by employer HR systems using unique hash tags.
                 </p>
                 <div className="p-4 bg-emerald-50/30 border border-emerald-100 rounded-2xl max-w-md font-mono text-[11px] text-emerald-700 space-y-1">
-                  <p className="text-emerald-900 font-semibold">✓ Credential Seal: VERIFIED BY SKILLINTERN ENGINE</p>
+                  <p className="text-emerald-900 font-semibold">✓ Credential Seal: VERIFIED BY UGINTERN ENGINE</p>
                   <p>✓ Reference Hash: SI-2026-REACT-A893F</p>
                 </div>
               </div>
@@ -886,7 +886,7 @@ export default function Home() {
                       </div>
                       <div className="sm:col-span-2 border-t border-zinc-100 pt-3.5 mt-1.5 flex justify-between items-center text-[10px]">
                         <span className="text-zinc-400">Issue Date: <strong>{verificationResult.date}</strong></span>
-                        <span className="text-indigo-650 font-bold">SkillIntern Verification Engine v2.0</span>
+                        <span className="text-indigo-650 font-bold">UG Intern Verification Engine v2.0</span>
                       </div>
                     </div>
                   </div>
@@ -1069,7 +1069,7 @@ export default function Home() {
               Trusted by Students & Faculty
             </h2>
             <p className="text-zinc-500 text-sm font-light">
-              Read how candidates and administrators utilize verified SkillIntern credentials.
+              Read how candidates and administrators utilize verified UG Intern credentials.
             </p>
           </div>
 
@@ -1085,7 +1085,7 @@ export default function Home() {
                   </div>
                 </div>
                 <p className="text-xs text-zinc-500 leading-relaxed font-light italic">
-                  &ldquo;SkillIntern solved my internship mandate. The Web Development track guidelines were clear, and passing the timed assessment generated my verified certificate instantly. Employers verified it without delays!&rdquo;
+                  &ldquo;UG Intern solved my internship mandate. The Web Development track guidelines were clear, and passing the timed assessment generated my verified certificate instantly. Employers verified it without delays!&rdquo;
                 </p>
               </div>
               <span className="text-[10px] font-bold text-indigo-600 block mt-4 uppercase tracking-wider text-left">✓ Verified Student</span>
@@ -1102,7 +1102,7 @@ export default function Home() {
                   </div>
                 </div>
                 <p className="text-xs text-zinc-500 leading-relaxed font-light italic">
-                  &ldquo;We uploaded student indices in bulk and monitored evaluations. Using SkillIntern ensures students complete their assessments fairly, and gives our placements team concrete validation of student readiness.&rdquo;
+                  &ldquo;We uploaded student indices in bulk and monitored evaluations. Using UG Intern ensures students complete their assessments fairly, and gives our placements team concrete validation of student readiness.&rdquo;
                 </p>
               </div>
               <span className="text-[10px] font-bold text-violet-600 block mt-4 uppercase tracking-wider text-left">✓ Verified Faculty</span>
@@ -1119,7 +1119,7 @@ export default function Home() {
                   </div>
                 </div>
                 <p className="text-xs text-zinc-500 leading-relaxed font-light italic">
-                  &ldquo;Credential fraud is a massive challenge in volume hiring. SkillIntern's QR-code and unique ID lookup portals allow my onboarding team to verify candidate scorecards instantly, reducing check times from weeks to seconds.&rdquo;
+                  &ldquo;Credential fraud is a massive challenge in volume hiring. UG Intern's QR-code and unique ID lookup portals allow my onboarding team to verify candidate scorecards instantly, reducing check times from weeks to seconds.&rdquo;
                 </p>
               </div>
               <span className="text-[10px] font-bold text-emerald-600 block mt-4 uppercase tracking-wider text-left">✓ Verified Recruiter</span>
@@ -1135,7 +1135,7 @@ export default function Home() {
               Frequently Asked Questions
             </h2>
             <p className="text-zinc-500 text-sm font-light">
-              Everything you need to know about the SkillIntern platform and credential standards.
+              Everything you need to know about the UG Intern platform and credential standards.
             </p>
           </div>
 
@@ -1174,7 +1174,7 @@ export default function Home() {
             <div className="max-w-2xl mx-auto space-y-6 relative z-10">
               <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Ready To Build Your Career?</h2>
               <p className="text-sm sm:text-base text-indigo-50 leading-relaxed font-light">
-                Join SkillIntern today, take your vocational assessments, and obtain practical experience credentials that employers actually value.
+                Join UG Intern today, take your vocational assessments, and obtain practical experience credentials that employers actually value.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">

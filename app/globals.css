@@ -441,3 +441,26 @@ h1 {
   background: -webkit-linear-gradient(to right, #3A6073, #16222A);
   background: linear-gradient(to right, #3A6073, #16222A);
 }
+
+/* Global Focus-Visible Outline Styles for Accessibility (WCAG 2.1) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[tabindex="0"]:focus-visible {
+  outline: 2px solid #5b5ff7 !important;
+  outline-offset: 2px !important;
+}
+
+/* Ensure outline is hidden when element is focused by mouse, but visible via keyboard */
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+select:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible),
+[role="button"]:focus:not(:focus-visible),
+[tabindex="0"]:focus:not(:focus-visible) {
+  outline: none !important;
+}

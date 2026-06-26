@@ -36,9 +36,10 @@ export default function PaymentPage() {
         ]);
         setSettings(stg);
 
-        // If payments are disabled or they already have a completed payment, redirect to dashboard
-        if (!stg.payments_enabled || pays.length > 0) {
-          window.location.href = "/student/dashboard";
+        // If payments are disabled or they already have an unused credit, redirect to internships page
+        const unusedCredits = pays.filter((p) => p.internship_id === "general_credit_unused" && p.status === "completed");
+        if (!stg.payments_enabled || unusedCredits.length > 0) {
+          window.location.href = "/student/internships";
         } else {
           setLoading(false);
         }
@@ -62,7 +63,7 @@ export default function PaymentPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          internshipId: "general",
+          internshipId: "general_credit_unused",
           studentId: user.id
         }),
       });
@@ -92,7 +93,7 @@ export default function PaymentPage() {
           const completedPayment: Payment = {
             id: `pay-${Math.random().toString(36).substr(2, 9)}`,
             student_id: user.id,
-            internship_id: "general",
+            internship_id: "general_credit_unused",
             amount: settings.assessment_fee * 100,
             status: "completed",
             razorpay_order_id: orderData.order_id,
@@ -108,9 +109,9 @@ export default function PaymentPage() {
             localStorage.setItem("mock_payments", JSON.stringify(mockPayments));
           }
 
-          setSuccess("Payment successful! Redirecting you to the home page...");
+          setSuccess("Payment successful! Redirecting to select your internship...");
           setTimeout(() => {
-            window.location.href = "/student/dashboard";
+            window.location.href = "/student/internships";
           }, 1500);
         } else {
           throw new Error(verifyData.error || "Payment verification failed.");
@@ -123,7 +124,7 @@ export default function PaymentPage() {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_SvZr486cWgXNIQ",
         amount: orderData.amount,
         currency: orderData.currency,
-        name: "SkillIntern",
+        name: "UG Intern",
         description: "One-Time Assessment & Enrollment Fee",
         order_id: orderData.order_id,
         handler: async function (response: any) {
@@ -145,7 +146,7 @@ export default function PaymentPage() {
               const completedPayment: Payment = {
                 id: `pay-${Math.random().toString(36).substr(2, 9)}`,
                 student_id: user.id,
-                internship_id: "general",
+                internship_id: "general_credit_unused",
                 amount: settings.assessment_fee * 100,
                 status: "completed",
                 razorpay_order_id: response.razorpay_order_id,
@@ -161,9 +162,9 @@ export default function PaymentPage() {
                 localStorage.setItem("mock_payments", JSON.stringify(mockPayments));
               }
 
-              setSuccess("Payment successful! Redirecting you to the home page...");
+              setSuccess("Payment successful! Redirecting to select your internship...");
               setTimeout(() => {
-                window.location.href = "/student/dashboard";
+                window.location.href = "/student/internships";
               }, 1500);
             } else {
               setError(verifyData.error || "Payment verification failed.");
@@ -204,8 +205,8 @@ export default function PaymentPage() {
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem("skillintern_session");
-    document.cookie = "skillintern_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+    sessionStorage.removeItem("ugintern_session");
+    document.cookie = "ugintern_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
     window.location.href = "/auth/login";
   };
 
@@ -228,8 +229,10 @@ export default function PaymentPage() {
       {/* Basic Navigation Bar */}
       <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-zinc-200/80 bg-white/95 backdrop-blur px-6 sm:px-12 shadow-sm relative">
         <div className="flex items-center gap-2 font-bold text-zinc-900">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-650 font-bold text-white">SI</div>
-          <span className="text-base">Skill<span className="text-indigo-600 font-extrabold">Intern</span></span>
+          <img 
+            src="/logo-icon.png" 
+            className="h-10 w-auto object-contain" 
+          />
         </div>
         <button
           onClick={handleLogout}
@@ -258,7 +261,7 @@ export default function PaymentPage() {
 
           <div className="space-y-6">
             <p className="text-zinc-600 text-sm font-light leading-relaxed">
-              Hi <span className="font-bold text-zinc-950">{user?.full_name}</span>! SkillIntern requires a one-time evaluation & platform registration fee of <span className="font-bold text-indigo-600">₹{settings.assessment_fee}</span>. Once paid, you will instantly unlock:
+              Hi <span className="font-bold text-zinc-950">{user?.full_name}</span>! UG Intern requires a one-time evaluation & platform registration fee of <span className="font-bold text-indigo-600">₹{settings.assessment_fee}</span>. Once paid, you will instantly unlock:
             </p>
 
             {/* Benefit Bullets */}
@@ -331,7 +334,7 @@ export default function PaymentPage() {
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
 
       <footer className="py-6 border-t border-zinc-200/60 bg-white text-center text-xs text-zinc-600 font-semibold">
-        <p>© 2026 SkillIntern. Secure 256-bit SSL encrypted transaction portal.</p>
+        <p>© 2026 UG Intern. Secure 256-bit SSL encrypted transaction portal.</p>
       </footer>
     </div>
   );

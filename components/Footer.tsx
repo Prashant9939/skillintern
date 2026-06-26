@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Mail, Phone, MapPin } from "lucide-react";
+import { BRANDING } from "@/config/branding";
 
 // Inline SVG brand icons since lucide-react deprecated them in v0.400+
 const LinkedInIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -49,7 +50,7 @@ const TwitterIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-[linear-gradient(to_right,#3a6073,#16222a)] text-slate-100 border-t border-white/10 pt-24 pb-16 mt-auto relative overflow-hidden rounded-t-[32px] md:rounded-t-[48px]">
+    <footer className="w-full shrink-0 bg-[linear-gradient(to_right,#3a6073,#16222a)] text-slate-100 border-t border-white/10 pt-24 pb-16 mt-auto relative overflow-hidden rounded-t-[32px] md:rounded-t-[48px]">
       {/* Top glowing line overlay */}
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
 
@@ -62,14 +63,12 @@ export default function Footer() {
           {/* Brand Info Column */}
           <div className="lg:col-span-4 space-y-5">
             <Link href="/" className="flex items-center gap-2.5 font-bold text-xl text-white group w-fit">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 font-extrabold text-white shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-all">
-                SI
-              </div>
-              <span className="text-xl font-extrabold tracking-tight text-white">
-                Skill<span className="text-sky-200 font-black">Intern</span>
-              </span>
+              <img
+                src={BRANDING.logoIcon}
+                className="h-16 w-auto object-contain group-hover:scale-105 transition-all"
+              />
             </Link>
-            
+
             <p className="text-sm text-slate-200 font-light leading-relaxed max-w-sm">
               Empowering candidates with tamper-proof practical credentials verified by secure database systems.
             </p>
@@ -132,12 +131,12 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/" className="text-[15px] font-normal text-slate-200 hover:text-white transition-colors duration-200">
+                <Link href="/privacy-policy" className="text-[15px] font-normal text-slate-200 hover:text-white transition-colors duration-200">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/" className="text-[15px] font-normal text-slate-200 hover:text-white transition-colors duration-200">
+                <Link href="/terms-and-conditions" className="text-[15px] font-normal text-slate-200 hover:text-white transition-colors duration-200">
                   Terms & Conditions
                 </Link>
               </li>
@@ -152,8 +151,8 @@ export default function Footer() {
             <ul className="space-y-3.5 text-[15px] text-slate-200 font-normal">
               <li className="flex items-center gap-2.5">
                 <Mail className="h-4.5 w-4.5 text-sky-200 shrink-0" />
-                <a href="mailto:support@skillintern.com" className="hover:text-white transition-colors duration-200 truncate">
-                  support@skillintern.com
+                <a href={`mailto:${BRANDING.emails.support}`} className="hover:text-white transition-colors duration-200 truncate">
+                  {BRANDING.emails.support}
                 </a>
               </li>
               <li className="flex items-center gap-2.5">
@@ -173,32 +172,32 @@ export default function Footer() {
         {/* Bottom Bar: Copyright & Socials */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-t border-white/5 pt-8 mt-16">
           <div className="text-slate-300 text-sm tracking-tight text-center md:text-left">
-            © 2026 SkillIntern. All rights reserved.
+            © 2026 {BRANDING.name}. All rights reserved.
           </div>
 
           {/* Social Icons */}
           <div className="flex items-center gap-4">
-            <a 
-              href="https://linkedin.com" 
-              target="_blank" 
+            <a
+              href="https://linkedin.com"
+              target="_blank"
               rel="noopener noreferrer"
               className="text-slate-300 hover:text-white hover:scale-110 transition-all duration-200"
               title="LinkedIn"
             >
               <LinkedInIcon className="h-5 w-5" />
             </a>
-            <a 
-              href="https://github.com" 
-              target="_blank" 
+            <a
+              href="https://github.com"
+              target="_blank"
               rel="noopener noreferrer"
               className="text-slate-300 hover:text-white hover:scale-110 transition-all duration-200"
               title="GitHub"
             >
               <GitHubIcon className="h-5 w-5" />
             </a>
-            <a 
-              href="https://twitter.com" 
-              target="_blank" 
+            <a
+              href="https://twitter.com"
+              target="_blank"
               rel="noopener noreferrer"
               className="text-slate-300 hover:text-white hover:scale-110 transition-all duration-200"
               title="Twitter"

@@ -46,7 +46,7 @@ To maintain production-level security in your live Supabase instance and resolve
 * Save the changes. This ensures that any compromised/leaked passwords will be automatically blocked during registration or login.
 
 ### 2. Apply SECURITY DEFINER Function Execution Hardening
-* Copy the commands under the `DATABASE SECURITY HARDENING` section of your [schema.sql](file:///c:/Users/shiwa/Desktop/skillintern/schema.sql) file.
+* Copy the commands under the `DATABASE SECURITY HARDENING` section of your [schema.sql](file:///c:/Users/shiwa/Desktop/ugintern/schema.sql) file.
 * Run them in the **Supabase SQL Editor**.
 * This revokes public execute access to event trigger functions (like `public.rls_auto_enable()`) and alters default privileges so that any newly created functions do not grant public execution rights by default.
 

@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import SessionTimeoutHandler from "@/components/SessionTimeoutHandler";
+import { BRANDING } from "@/config/branding";
 
 export const metadata: Metadata = {
-  title: "SkillIntern | Internship Certification Platform",
+  title: `${BRANDING.name} | Internship Certification Platform`,
   description: "Accelerate your career with verified professional internship certificates and test scorecards.",
+  icons: {
+    icon: BRANDING.logoIcon,
+    shortcut: BRANDING.logoIcon,
+    apple: BRANDING.logoIcon,
+  },
 };
 
 export default function RootLayout({

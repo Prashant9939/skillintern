@@ -110,6 +110,8 @@ export default function CertificatesPage() {
   const [previewHtml, setPreviewHtml] = useState<string>("");
   const [previewTitle, setPreviewTitle] = useState<string>("");
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [activeTemplateCode, setActiveTemplateCode] = useState<string>("");
+  const [activeInternshipId, setActiveInternshipId] = useState<string>("");
 
   useEffect(() => {
     async function loadData() {
@@ -145,6 +147,8 @@ export default function CertificatesPage() {
       alert("Document template not found.");
       return;
     }
+    setActiveTemplateCode(tplCode);
+    setActiveInternshipId(result.internship_id);
     const rendered = renderDocument(tpl.html_content, profile, result.internship_title || "Internship Program", result, tplCode, payments);
     setPreviewHtml(rendered);
     setPreviewTitle(tpl.name);
@@ -476,15 +480,25 @@ export default function CertificatesPage() {
                 <ShieldCheck className="h-5 w-5 text-[#5B5FF7] animate-pulse" />
                 <h3 className="text-sm font-extrabold text-zinc-900 uppercase tracking-wider">{previewTitle} Preview</h3>
               </div>
-              <button
-                onClick={() => {
-                  setShowPreviewModal(false);
-                  setPreviewHtml("");
-                }}
-                className="rounded-xl border border-zinc-250 bg-white hover:bg-zinc-100 active:scale-95 text-xs font-bold text-zinc-650 hover:text-zinc-900 px-4 py-2 transition-all cursor-pointer"
-              >
-                Close Preview
-              </button>
+              <div className="flex gap-2">
+                <a
+                  href={`/api/documents/download?templateType=${activeTemplateCode}&studentId=${user?.id}&internshipId=${activeInternshipId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95 text-xs font-bold px-4 py-2 transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-sm shadow-indigo-600/10"
+                >
+                  Download PDF
+                </a>
+                <button
+                  onClick={() => {
+                    setShowPreviewModal(false);
+                    setPreviewHtml("");
+                  }}
+                  className="rounded-xl border border-zinc-250 bg-white hover:bg-zinc-100 active:scale-95 text-xs font-bold text-zinc-655 hover:text-zinc-900 px-4 py-2 transition-all cursor-pointer"
+                >
+                  Close Preview
+                </button>
+              </div>
             </div>
             <div className="flex-grow bg-zinc-100 p-4 flex items-center justify-center overflow-hidden">
               <iframe

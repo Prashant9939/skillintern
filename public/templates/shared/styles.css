@@ -1,0 +1,49 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #1E293B;
+  background-color: #FFFFFF;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+.document-container {
+  padding: 40px;
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+}
+.certificate-container {
+  padding: 50px;
+  max-width: 900px;
+  margin: 0 auto;
+  border: 10px double #7C3AED;
+  border-radius: 16px;
+  text-align: center;
+  background-color: #FAFAF9;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+.title-heavy {
+  font-family: 'Cinzel', 'Georgia', serif;
+  color: #1E3A8A;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+th, td {
+  border: 1px solid #E2E8F0;
+  padding: 10px;
+  text-align: left;
+  font-size: 13px;
+}
+th {
+  background-color: #F8FAFC;
+  font-weight: bold;
+  color: #475569;
+}
+.text-center { text-align: center; }

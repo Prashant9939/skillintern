@@ -5,6 +5,77 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable react-hooks/set-state-in-effect */
 import { supabase, isSupabaseConfigured } from "./client";
+import { getCurrentUser } from "./auth";
+
+// Cache storage for optimized requests
+const dbCache: Record<string, { data: any; expiry: number }> = {};
+export const CACHE_TTL = {
+  short: 15 * 1000,    // 15 seconds
+  medium: 60 * 1000,   // 1 minute
+  long: 5 * 60 * 1000, // 5 minutes
+};
+
+export function getCachedData<T>(key: string): T | null {
+  if (typeof window !== "undefined") {
+    try {
+      const cachedStr = sessionStorage.getItem(`db_cache_${key}`);
+      if (cachedStr) {
+        const cached = JSON.parse(cachedStr);
+        if (cached && cached.expiry > Date.now()) {
+          return cached.data as T;
+        }
+        sessionStorage.removeItem(`db_cache_${key}`);
+      }
+    } catch (e) {
+      console.warn("Failed to read from sessionStorage cache:", e);
+    }
+  }
+
+  const cached = dbCache[key];
+  if (cached && cached.expiry > Date.now()) {
+    return cached.data as T;
+  }
+  delete dbCache[key];
+  return null;
+}
+
+export function setCachedData<T>(key: string, data: T, ttl: number) {
+  const expiry = Date.now() + ttl;
+  dbCache[key] = {
+    data,
+    expiry
+  };
+
+  if (typeof window !== "undefined") {
+    try {
+      sessionStorage.setItem(`db_cache_${key}`, JSON.stringify({ data, expiry }));
+    } catch (e) {
+      console.warn("Failed to write to sessionStorage cache:", e);
+    }
+  }
+}
+
+export function invalidateCacheKey(keyPrefix: string) {
+  Object.keys(dbCache).forEach((key) => {
+    if (key.startsWith(keyPrefix)) {
+      delete dbCache[key];
+    }
+  });
+
+  if (typeof window !== "undefined") {
+    try {
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && key.startsWith(`db_cache_${keyPrefix}`)) {
+          sessionStorage.removeItem(key);
+          i--; // Adjust index since we removed an item
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to invalidate sessionStorage cache:", e);
+    }
+  }
+}
 
 export interface Internship {
   id: string;
@@ -38,6 +109,17 @@ export interface TestResult {
   reference_number?: string;
 }
 
+export interface ResultChangeHistory {
+  id: string;
+  admin_id: string;
+  student_id: string;
+  test_result_id: string;
+  field_name: string;
+  previous_value: string | null;
+  new_value: string | null;
+  changed_at: string;
+}
+
 
 
 export interface DocumentTemplate {
@@ -47,7 +129,22 @@ export interface DocumentTemplate {
   html_content: string;
   is_visible: boolean;
   updated_at: string;
+  internship_id?: string | null;
 }
+
+export interface SupportTicket {
+  id: string;
+  student_id: string;
+  subject: string;
+  description: string;
+  category: string;
+  status: "open" | "in_progress" | "resolved";
+  admin_reply?: string;
+  created_at: string;
+  updated_at: string;
+  student_name?: string;
+}
+
 
 
 
@@ -313,13 +410,19 @@ function setMockStorage<T>(key: string, data: T) {
 // INTERNSHIPS OPERATIONS
 // -------------------------------------------------------------
 export async function getInternships(): Promise<Internship[]> {
+  const cacheKey = "internships_all";
+  const cached = getCachedData<Internship[]>(cacheKey);
+  if (cached) return cached;
+
   if (isSupabaseConfigured() && supabase) {
     try {
       const { data, error } = await supabase.from("internships").select("*").order("created_at", { ascending: false });
       if (error) {
         console.warn("getInternships query failed, falling back to mock data:", error);
         const list = getMockStorage<Internship[]>("mock_internships", DEFAULT_INTERNSHIPS);
-        return list.map(item => ({ ...item, duration: "120 Hrs" }));
+        const mapped = list.map(item => ({ ...item, duration: "120 Hrs" }));
+        setCachedData(cacheKey, mapped, CACHE_TTL.long);
+        return mapped;
       }
 
       // If on client-side and the loaded list is empty or has fewer tracks than defaults,
@@ -329,19 +432,27 @@ export async function getInternships(): Promise<Internship[]> {
         await seedDatabase();
         const { data: updatedData } = await supabase.from("internships").select("*").order("created_at", { ascending: false });
         if (updatedData && updatedData.length > 0) {
-          return updatedData.map(item => ({ ...item, duration: "120 Hrs" }));
+          const mapped = updatedData.map(item => ({ ...item, duration: "120 Hrs" }));
+          setCachedData(cacheKey, mapped, CACHE_TTL.long);
+          return mapped;
         }
       }
 
       if (!data || data.length === 0) {
         const list = getMockStorage<Internship[]>("mock_internships", DEFAULT_INTERNSHIPS);
-        return list.map(item => ({ ...item, duration: "120 Hrs" }));
+        const mapped = list.map(item => ({ ...item, duration: "120 Hrs" }));
+        setCachedData(cacheKey, mapped, CACHE_TTL.long);
+        return mapped;
       }
-      return data.map(item => ({ ...item, duration: "120 Hrs" }));
+      const mapped = data.map(item => ({ ...item, duration: "120 Hrs" }));
+      setCachedData(cacheKey, mapped, CACHE_TTL.long);
+      return mapped;
     } catch (err) {
       console.warn("getInternships failed, falling back to mock data:", err);
       const list = getMockStorage<Internship[]>("mock_internships", DEFAULT_INTERNSHIPS);
-      return list.map(item => ({ ...item, duration: "120 Hrs" }));
+      const mapped = list.map(item => ({ ...item, duration: "120 Hrs" }));
+      setCachedData(cacheKey, mapped, CACHE_TTL.long);
+      return mapped;
     }
   } else {
     if (typeof window !== "undefined") {
@@ -368,32 +479,49 @@ export async function getInternships(): Promise<Internship[]> {
         const defaults = await seedDefaultTemplatesFromFiles();
         localStorage.setItem("mock_document_templates", JSON.stringify(defaults));
 
-        return DEFAULT_INTERNSHIPS.map(item => ({ ...item, duration: "120 Hrs" }));
+        const mapped = DEFAULT_INTERNSHIPS.map(item => ({ ...item, duration: "120 Hrs" }));
+        setCachedData(cacheKey, mapped, CACHE_TTL.long);
+        return mapped;
       }
-      return list.map(item => ({ ...item, duration: "120 Hrs" }));
+      const mapped = list.map(item => ({ ...item, duration: "120 Hrs" }));
+      setCachedData(cacheKey, mapped, CACHE_TTL.long);
+      return mapped;
     }
-    return DEFAULT_INTERNSHIPS.map(item => ({ ...item, duration: "120 Hrs" }));
+    const mapped = DEFAULT_INTERNSHIPS.map(item => ({ ...item, duration: "120 Hrs" }));
+    setCachedData(cacheKey, mapped, CACHE_TTL.long);
+    return mapped;
   }
 }
 
 export async function getInternshipById(id: string): Promise<Internship | null> {
+  const cacheKey = `internship_${id}`;
+  const cached = getCachedData<Internship>(cacheKey);
+  if (cached) return cached;
+
   if (isSupabaseConfigured() && supabase) {
     try {
       const { data, error } = await supabase.from("internships").select("*").eq("id", id).single();
       if (error) {
         console.warn("getInternshipById query failed, falling back to mock data:", error);
         const list = await getInternships();
-        return list.find((i) => i.id === id) || null;
+        const found = list.find((i) => i.id === id) || null;
+        if (found) setCachedData(cacheKey, found, CACHE_TTL.long);
+        return found;
       }
+      if (data) setCachedData(cacheKey, data, CACHE_TTL.long);
       return data;
     } catch (err) {
       console.warn("getInternshipById failed, falling back to mock data:", err);
       const list = await getInternships();
-      return list.find((i) => i.id === id) || null;
+      const found = list.find((i) => i.id === id) || null;
+      if (found) setCachedData(cacheKey, found, CACHE_TTL.long);
+      return found;
     }
   } else {
     const list = await getInternships();
-    return list.find((i) => i.id === id) || null;
+    const found = list.find((i) => i.id === id) || null;
+    if (found) setCachedData(cacheKey, found, CACHE_TTL.long);
+    return found;
   }
 }
 
@@ -417,6 +545,12 @@ function saveInternshipMock(internship: Omit<Internship, "id"> & { id?: string }
 }
 
 export async function saveInternship(internship: Omit<Internship, "id"> & { id?: string }): Promise<Internship> {
+  // Invalidate internship caches
+  invalidateCacheKey("internships_");
+  if (internship.id) {
+    invalidateCacheKey(`internship_${internship.id}`);
+  }
+
   if (isSupabaseConfigured() && supabase) {
     try {
       if (internship.id) {
@@ -437,18 +571,40 @@ export async function saveInternship(internship: Omit<Internship, "id"> & { id?:
           .single();
         if (error) throw error;
         if (!data) throw new Error("No data returned from database insert");
+        
+        // Auto-seed document templates for the new internship track
+        try {
+          await seedTemplatesForInternship(data.id);
+        } catch (seedErr) {
+          console.error("Auto-seeding templates failed:", seedErr);
+        }
+        
         return data;
       }
     } catch (err) {
       console.warn("saveInternship to Supabase failed, falling back to mock:", err);
-      return saveInternshipMock(internship);
+      const isNew = !internship.id;
+      const res = saveInternshipMock(internship);
+      if (isNew) {
+        seedTemplatesForInternship(res.id).catch(console.error);
+      }
+      return res;
     }
   } else {
-    return saveInternshipMock(internship);
+    const isNew = !internship.id;
+    const res = saveInternshipMock(internship);
+    if (isNew) {
+      seedTemplatesForInternship(res.id).catch(console.error);
+    }
+    return res;
   }
 }
 
 export async function deleteInternship(id: string): Promise<boolean> {
+  // Invalidate internship caches
+  invalidateCacheKey("internships_");
+  invalidateCacheKey(`internship_${id}`);
+
   if (isSupabaseConfigured() && supabase) {
     try {
       // 1. Delete dependent records in parallel
@@ -495,6 +651,10 @@ function deleteInternshipMock(id: string): boolean {
 // QUESTIONS OPERATIONS
 // -------------------------------------------------------------
 export async function getQuestions(internshipId: string): Promise<Question[]> {
+  const cacheKey = `questions_${internshipId}`;
+  const cached = getCachedData<Question[]>(cacheKey);
+  if (cached) return cached;
+
   if (isSupabaseConfigured() && supabase) {
     try {
       const { data, error } = await supabase
@@ -503,18 +663,28 @@ export async function getQuestions(internshipId: string): Promise<Question[]> {
         .eq("internship_id", internshipId);
       if (error) {
         console.warn("getQuestions query failed, falling back to mock data:", error);
-        return getMockQuestionsFallback(internshipId);
+        const fallback = getMockQuestionsFallback(internshipId);
+        setCachedData(cacheKey, fallback, CACHE_TTL.medium);
+        return fallback;
       }
       if (!data || data.length === 0) {
-        return getMockQuestionsFallback(internshipId);
+        const fallback = getMockQuestionsFallback(internshipId);
+        setCachedData(cacheKey, fallback, CACHE_TTL.medium);
+        return fallback;
       }
-      return data || [];
+      const questionsList = data || [];
+      setCachedData(cacheKey, questionsList, CACHE_TTL.medium);
+      return questionsList;
     } catch (err) {
       console.warn("getQuestions failed, falling back to mock data:", err);
-      return getMockQuestionsFallback(internshipId);
+      const fallback = getMockQuestionsFallback(internshipId);
+      setCachedData(cacheKey, fallback, CACHE_TTL.medium);
+      return fallback;
     }
   } else {
-    return getMockQuestionsFallback(internshipId);
+    const fallback = getMockQuestionsFallback(internshipId);
+    setCachedData(cacheKey, fallback, CACHE_TTL.medium);
+    return fallback;
   }
 }
 
@@ -562,6 +732,9 @@ function saveQuestionMock(question: Omit<Question, "id"> & { id?: string }): Que
 }
 
 export async function saveQuestion(question: Omit<Question, "id"> & { id?: string }): Promise<Question> {
+  // Invalidate questions cache
+  invalidateCacheKey("questions_");
+
   if (isSupabaseConfigured() && supabase) {
     try {
       if (question.id) {
@@ -594,6 +767,9 @@ export async function saveQuestion(question: Omit<Question, "id"> & { id?: strin
 }
 
 export async function deleteQuestion(id: string): Promise<boolean> {
+  // Invalidate questions cache
+  invalidateCacheKey("questions_");
+
   if (isSupabaseConfigured() && supabase) {
     const { error } = await supabase.from("questions").delete().eq("id", id);
     if (error) throw error;
@@ -609,18 +785,102 @@ export async function deleteQuestion(id: string): Promise<boolean> {
 // -------------------------------------------------------------
 // TEST RESULTS & CERTIFICATE OPERATIONS
 // -------------------------------------------------------------
-export function generateReferenceNumber(): string {
+export async function generateReferenceNumber(): Promise<string> {
   const date = new Date();
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const randomChars = Math.random().toString(36).substring(2, 8).toUpperCase();
-  return `SI-${year}${month}-${randomChars}`;
+  const prefix = `SI-${year}-`;
+  let nextNumber = 1;
+
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("test_results")
+        .select("reference_number")
+        .not("reference_number", "is", null)
+        .like("reference_number", `${prefix}%`);
+      
+      if (!error && data) {
+        let maxNum = 0;
+        for (const row of data) {
+          const refNum = row.reference_number;
+          if (refNum && refNum.startsWith(prefix)) {
+            const suffixStr = refNum.substring(prefix.length);
+            const num = parseInt(suffixStr, 10);
+            if (!isNaN(num) && num > maxNum) {
+              maxNum = num;
+            }
+          }
+        }
+        nextNumber = maxNum + 1;
+      }
+    } catch (err) {
+      console.warn("Failed to fetch reference numbers from Supabase, falling back:", err);
+    }
+  }
+
+  // Double check uniqueness in local storage mock if in browser / mock mode
+  if (typeof window !== "undefined") {
+    try {
+      const list = getMockStorage<TestResult[]>("mock_test_results", []);
+      let maxNum = 0;
+      for (const res of list) {
+        const refNum = res.reference_number;
+        if (refNum && refNum.startsWith(prefix)) {
+          const suffixStr = refNum.substring(prefix.length);
+          const num = parseInt(suffixStr, 10);
+          if (!isNaN(num) && num > maxNum) {
+            maxNum = num;
+          }
+        }
+      }
+      nextNumber = Math.max(nextNumber, maxNum + 1);
+    } catch (err) {
+      console.warn("Failed to check uniqueness in mock storage:", err);
+    }
+  }
+
+  let finalCertNumber = `${prefix}${String(nextNumber).padStart(6, "0")}`;
+  let attempt = 1;
+  while (true) {
+    let exists = false;
+    if (isSupabaseConfigured() && supabase) {
+      const { data } = await supabase
+        .from("test_results")
+        .select("id")
+        .eq("reference_number", finalCertNumber)
+        .maybeSingle();
+      if (data) exists = true;
+    }
+    if (!exists && typeof window !== "undefined") {
+      const list = getMockStorage<TestResult[]>("mock_test_results", []);
+      if (list.some((r) => r.reference_number === finalCertNumber)) {
+        exists = true;
+      }
+    }
+    if (!exists) {
+      break;
+    }
+    nextNumber++;
+    finalCertNumber = `${prefix}${String(nextNumber).padStart(6, "0")}`;
+    attempt++;
+    if (attempt > 100) {
+      const randomSuffix = String(Math.floor(100000 + Math.random() * 900000));
+      finalCertNumber = `${prefix}${randomSuffix}`;
+      break;
+    }
+  }
+
+  return finalCertNumber;
 }
 
 // -------------------------------------------------------------
 // TEST RESULTS & CERTIFICATE OPERATIONS
 // -------------------------------------------------------------
 export async function getTestResults(studentId?: string): Promise<TestResult[]> {
+  const cacheKey = `test_results_${studentId || 'all'}`;
+  const cached = getCachedData<TestResult[]>(cacheKey);
+  if (cached) return cached;
+
   if (isSupabaseConfigured() && supabase) {
     try {
       let query = supabase.from("test_results").select("*, profiles(full_name), internships(title)");
@@ -630,10 +890,12 @@ export async function getTestResults(studentId?: string): Promise<TestResult[]> 
       const { data, error } = await query.order("completed_at", { ascending: false });
       if (error) {
         console.warn("getTestResults query failed, falling back to mock data:", error);
-        return getMockTestResultsFallback(studentId);
+        const fallback = await getMockTestResultsFallback(studentId);
+        setCachedData(cacheKey, fallback, CACHE_TTL.short);
+        return fallback;
       }
       
-      return (data || []).map((r: any) => ({
+      const mapped = (data || []).map((r: any) => ({
         id: r.id,
         student_id: r.student_id,
         internship_id: r.internship_id,
@@ -646,12 +908,18 @@ export async function getTestResults(studentId?: string): Promise<TestResult[]> 
         internship_title: r.internships?.title,
         reference_number: r.reference_number,
       }));
+      setCachedData(cacheKey, mapped, CACHE_TTL.short);
+      return mapped;
     } catch (err) {
       console.warn("getTestResults failed, falling back to mock data:", err);
-      return getMockTestResultsFallback(studentId);
+      const fallback = await getMockTestResultsFallback(studentId);
+      setCachedData(cacheKey, fallback, CACHE_TTL.short);
+      return fallback;
     }
   } else {
-    return getMockTestResultsFallback(studentId);
+    const fallback = await getMockTestResultsFallback(studentId);
+    setCachedData(cacheKey, fallback, CACHE_TTL.short);
+    return fallback;
   }
 }
 
@@ -677,6 +945,10 @@ async function getMockTestResultsFallback(studentId?: string): Promise<TestResul
 }
 
 export async function getTestResultById(id: string): Promise<TestResult | null> {
+  const cacheKey = `test_result_${id}`;
+  const cached = getCachedData<TestResult>(cacheKey);
+  if (cached) return cached;
+
   if (isSupabaseConfigured() && supabase) {
     try {
       const { data, error } = await supabase
@@ -687,10 +959,12 @@ export async function getTestResultById(id: string): Promise<TestResult | null> 
       if (error) {
         console.warn("getTestResultById query failed, falling back to mock data:", error);
         const list = await getTestResults();
-        return list.find((r) => r.id === id) || null;
+        const found = list.find((r) => r.id === id) || null;
+        if (found) setCachedData(cacheKey, found, CACHE_TTL.short);
+        return found;
       }
       
-      return {
+      const mapped = {
         id: data.id,
         student_id: data.student_id,
         internship_id: data.internship_id,
@@ -703,19 +977,29 @@ export async function getTestResultById(id: string): Promise<TestResult | null> 
         internship_title: data.internships?.title,
         reference_number: data.reference_number,
       };
+      setCachedData(cacheKey, mapped, CACHE_TTL.short);
+      return mapped;
     } catch (err) {
       console.warn("getTestResultById failed, falling back to mock data:", err);
       const list = await getTestResults();
-      return list.find((r) => r.id === id) || null;
+      const found = list.find((r) => r.id === id) || null;
+      if (found) setCachedData(cacheKey, found, CACHE_TTL.short);
+      return found;
     }
   } else {
     const list = await getTestResults();
-    return list.find((r) => r.id === id) || null;
+    const found = list.find((r) => r.id === id) || null;
+    if (found) setCachedData(cacheKey, found, CACHE_TTL.short);
+    return found;
   }
 }
 
 export async function verifyCertificate(refNum: string): Promise<TestResult | null> {
   const cleanRef = refNum.trim();
+  const cacheKey = `verify_${cleanRef.toUpperCase()}`;
+  const cached = getCachedData<TestResult>(cacheKey);
+  if (cached) return cached;
+
   if (isSupabaseConfigured() && supabase) {
     try {
       const { data, error } = await supabase
@@ -726,13 +1010,17 @@ export async function verifyCertificate(refNum: string): Promise<TestResult | nu
       if (error) {
         console.warn("verifyCertificate query failed, falling back to mock:", error);
         const list = await getTestResults();
-        return list.find((r) => r.reference_number?.toUpperCase() === cleanRef.toUpperCase()) || null;
+        const found = list.find((r) => r.reference_number?.toUpperCase() === cleanRef.toUpperCase()) || null;
+        if (found) setCachedData(cacheKey, found, CACHE_TTL.short);
+        return found;
       }
       if (!data) {
         const list = await getTestResults();
-        return list.find((r) => r.reference_number?.toUpperCase() === cleanRef.toUpperCase()) || null;
+        const found = list.find((r) => r.reference_number?.toUpperCase() === cleanRef.toUpperCase()) || null;
+        if (found) setCachedData(cacheKey, found, CACHE_TTL.short);
+        return found;
       }
-      return {
+      const mapped = {
         id: data.id,
         student_id: data.student_id,
         internship_id: data.internship_id,
@@ -745,19 +1033,30 @@ export async function verifyCertificate(refNum: string): Promise<TestResult | nu
         internship_title: data.internships?.title,
         reference_number: data.reference_number,
       };
+      setCachedData(cacheKey, mapped, CACHE_TTL.short);
+      return mapped;
     } catch (err) {
       console.warn("verifyCertificate failed, falling back to mock:", err);
       const list = await getTestResults();
-      return list.find((r) => r.reference_number?.toUpperCase() === cleanRef.toUpperCase()) || null;
+      const found = list.find((r) => r.reference_number?.toUpperCase() === cleanRef.toUpperCase()) || null;
+      if (found) setCachedData(cacheKey, found, CACHE_TTL.short);
+      return found;
     }
   } else {
     const list = await getTestResults();
-    return list.find((r) => r.reference_number?.toUpperCase() === cleanRef.toUpperCase()) || null;
+    const found = list.find((r) => r.reference_number?.toUpperCase() === cleanRef.toUpperCase()) || null;
+    if (found) setCachedData(cacheKey, found, CACHE_TTL.short);
+    return found;
   }
 }
 
 export async function saveTestResult(res: Omit<TestResult, "id">): Promise<TestResult> {
-  const reference_number = res.passed && !res.reference_number ? generateReferenceNumber() : res.reference_number;
+  // Invalidate test results caches
+  invalidateCacheKey("test_results_");
+  invalidateCacheKey("verify_");
+  invalidateCacheKey("test_result_");
+
+  const reference_number = res.passed && !res.reference_number ? await generateReferenceNumber() : res.reference_number;
   const insertData = {
     ...res,
     reference_number
@@ -796,6 +1095,10 @@ function saveTestResultMock(res: Omit<TestResult, "id">): TestResult {
 // PROFILE READ FOR CURRENT USER
 // -------------------------------------------------------------
 export async function getStudentProfile(userId: string): Promise<any | null> {
+  const cacheKey = `student_profile_${userId}`;
+  const cached = getCachedData<any>(cacheKey);
+  if (cached) return cached;
+
   if (isSupabaseConfigured() && supabase) {
     try {
       const { data, error } = await supabase
@@ -805,15 +1108,22 @@ export async function getStudentProfile(userId: string): Promise<any | null> {
         .single();
       if (error) {
         console.warn("getStudentProfile query failed, falling back to mock data:", error);
-        return getMockProfileFallback(userId);
+        const res = getMockProfileFallback(userId);
+        setCachedData(cacheKey, res, CACHE_TTL.short);
+        return res;
       }
+      setCachedData(cacheKey, data, CACHE_TTL.short);
       return data;
     } catch (err) {
       console.warn("getStudentProfile failed, falling back to mock data:", err);
-      return getMockProfileFallback(userId);
+      const res = getMockProfileFallback(userId);
+      setCachedData(cacheKey, res, CACHE_TTL.short);
+      return res;
     }
   } else {
-    return getMockProfileFallback(userId);
+    const res = getMockProfileFallback(userId);
+    setCachedData(cacheKey, res, CACHE_TTL.short);
+    return res;
   }
 }
 
@@ -880,6 +1190,7 @@ function stripPassword(p: any) {
 }
 
 export async function updateStudentProfile(userId: string, data: any): Promise<{ success: boolean; data?: any }> {
+  invalidateCacheKey("student_profile_");
   const sanitizedData: any = {};
   for (const key in data) {
     if (typeof data[key] === "string") {
@@ -940,6 +1251,7 @@ function updateStudentProfileMock(userId: string, data: any): { success: boolean
 }
 
 export async function deleteProfile(id: string): Promise<boolean> {
+  invalidateCacheKey("student_profile_");
   if (isSupabaseConfigured() && supabase) {
     try {
       const { error } = await supabase
@@ -1128,6 +1440,10 @@ export async function seedDatabase(): Promise<{ success: boolean; message: strin
 // HTML DOCUMENT TEMPLATES OPERATIONS
 // -------------------------------------------------------------
 export async function getDocumentTemplates(): Promise<DocumentTemplate[]> {
+  const cacheKey = "document_templates_all";
+  const cached = getCachedData<DocumentTemplate[]>(cacheKey);
+  if (cached) return cached;
+
   if (isSupabaseConfigured() && supabase) {
     try {
       const { data, error } = await supabase
@@ -1137,14 +1453,19 @@ export async function getDocumentTemplates(): Promise<DocumentTemplate[]> {
         
       if (error) {
         console.warn("getDocumentTemplates failed, falling back to mock:", error);
-        return getMockDocumentTemplates();
+        const res = await getMockDocumentTemplates();
+        setCachedData(cacheKey, res, CACHE_TTL.long);
+        return res;
       }
       
       if (!data || data.length === 0) {
         // Database is empty, let's seed default templates
         const seeded = await getMockDocumentTemplates();
         const client = supabase;
-        if (!client) return seeded;
+        if (!client) {
+          setCachedData(cacheKey, seeded, CACHE_TTL.long);
+          return seeded;
+        }
         // Try to insert them into Supabase in parallel
         await Promise.all(
           seeded.map(async (t) => {
@@ -1160,16 +1481,23 @@ export async function getDocumentTemplates(): Promise<DocumentTemplate[]> {
             }
           })
         );
+        setCachedData(cacheKey, seeded, CACHE_TTL.long);
         return seeded;
       }
       
-      return data || [];
+      const res = data || [];
+      setCachedData(cacheKey, res, CACHE_TTL.long);
+      return res;
     } catch (err) {
       console.warn("getDocumentTemplates failed, falling back to mock:", err);
-      return getMockDocumentTemplates();
+      const res = await getMockDocumentTemplates();
+      setCachedData(cacheKey, res, CACHE_TTL.long);
+      return res;
     }
   } else {
-    return getMockDocumentTemplates();
+    const res = await getMockDocumentTemplates();
+    setCachedData(cacheKey, res, CACHE_TTL.long);
+    return res;
   }
 }
 
@@ -1211,25 +1539,44 @@ async function seedDefaultTemplatesFromFiles(): Promise<DocumentTemplate[]> {
   };
 
   const files: Record<string, string> = {
-    offer_letter: "offer_letter.html",
+    offer_letter: "offer-letter.html",
+    attendance_sheet: "attendance.html",
+    internship_report: "report.html",
     certificate: "certificate.html",
-    internship_report: "project_report.html"
+    completion_letter: "completion-letter.html",
+    assessment: "assessment.html"
   };
   
   const templates = await Promise.all(
     codes.map(async (code) => {
       let html = "";
       if (files[code]) {
-        try {
-          const res = await fetch(`/templates/${files[code]}`);
-          if (res.ok) {
-            html = await res.text();
-          } else {
-            throw new Error(`Fetch status ${res.status}`);
+        const fileName = files[code];
+        if (typeof window === "undefined") {
+          try {
+            const fs = require("fs");
+            const path = require("path");
+            const filePath = path.join(process.cwd(), "public", "templates", "default", fileName);
+            if (fs.existsSync(filePath)) {
+              html = fs.readFileSync(filePath, "utf8");
+            }
+          } catch (fsErr) {
+            console.warn(`Could not read default template file ${fileName} via fs:`, fsErr);
           }
-        } catch (e) {
-          console.warn(`Could not fetch template file for ${code}, using fallback:`, e);
-          html = getFallbackTemplateHtml(code, names[code]);
+        }
+        
+        if (!html) {
+          try {
+            const res = await fetch(`/templates/default/${fileName}`);
+            if (res.ok) {
+              html = await res.text();
+            } else {
+              throw new Error(`Fetch status ${res.status}`);
+            }
+          } catch (e) {
+            console.warn(`Could not fetch template file for ${code}, using fallback:`, e);
+            html = getFallbackTemplateHtml(code, names[code]);
+          }
         }
       } else {
         html = getFallbackTemplateHtml(code, names[code]);
@@ -1278,7 +1625,7 @@ function getFallbackTemplateHtml(code: string, name: string): string {
     <div class="footer">
       <div>Date: {{COMPLETION_DATE}}</div>
       <div>Verification ID: {{VERIFICATION_ID}}</div>
-      <div>SkillIntern Coordinator</div>
+      <div>UG Intern Coordinator</div>
     </div>
     <button class="print-btn" onclick="window.print()">Print Certificate</button>
   </div>
@@ -1319,7 +1666,7 @@ function getFallbackTemplateHtml(code: string, name: string): string {
       <div style="font-size: 14px; font-weight: bold; color: #475569; margin-top: 8px;">Final Grade: {{GRADE}}</div>
       <div style="font-size: 12px; color: #059669; font-weight: bold; margin-top: 4px;">Assessment Result: PASSED</div>
     </div>
-    <p style="font-size: 13px; text-align: center; color: #64748b;">This marksheet details the candidate's core competency score on the SkillIntern MCQ Assessment Engine.</p>
+    <p style="font-size: 13px; text-align: center; color: #64748b;">This marksheet details the candidate's core competency score on the UG Intern MCQ Assessment Engine.</p>
     <button class="print-btn" onclick="window.print()">Print Marksheet</button>
   </div>
 </body>
@@ -1407,7 +1754,7 @@ function getFallbackTemplateHtml(code: string, name: string): string {
       <div><strong>Department/Stream:</strong> {{DEPARTMENT}}</div>
     </div>
     <div class="content">
-      <p>I hereby express my consent to participate in the SkillIntern Vocational Training and Internship program. I agree to abide by the guidelines, schedules, and code of conduct set forth by the platform and the project coordinators.</p>
+      <p>I hereby express my consent to participate in the UG Intern Vocational Training and Internship program. I agree to abide by the guidelines, schedules, and code of conduct set forth by the platform and the project coordinators.</p>
       <p>I confirm that the details provided in my candidate profile are accurate. I understand that my certification is subject to completing the requirements and achieving a passing grade of 40% or above in the assessment portal.</p>
       <p style="margin-top: 16px;">Date: ________________________</p>
     </div>
@@ -1534,7 +1881,14 @@ export async function getDocumentTemplateByCode(code: string): Promise<DocumentT
   return list.find((t) => t.code === code) || null;
 }
 
-export async function saveDocumentTemplate(code: string, htmlContent: string, isVisible: boolean, name?: string): Promise<DocumentTemplate> {
+export async function saveDocumentTemplate(
+  code: string,
+  htmlContent: string,
+  isVisible: boolean,
+  name?: string,
+  internshipId?: string | null
+): Promise<DocumentTemplate> {
+  invalidateCacheKey("document_templates_all");
   const updatedTpl: any = {
     code,
     html_content: htmlContent,
@@ -1547,36 +1901,67 @@ export async function saveDocumentTemplate(code: string, htmlContent: string, is
 
   if (isSupabaseConfigured() && supabase) {
     try {
-      const { data, error } = await supabase
-        .from("document_templates")
-        .upsert(updatedTpl, { onConflict: "code" })
-        .select()
-        .single();
-        
-      if (error) throw error;
-      return data;
+      let query = supabase.from("document_templates").select("id");
+      if (internshipId) {
+        query = query.eq("code", code).eq("internship_id", internshipId);
+      } else {
+        query = query.eq("code", code).is("internship_id", null);
+      }
+      
+      const { data: existingTpl } = await query.maybeSingle();
+
+      if (existingTpl) {
+        const { data, error } = await supabase
+          .from("document_templates")
+          .update(updatedTpl)
+          .eq("id", existingTpl.id)
+          .select()
+          .single();
+        if (error) throw error;
+        return data;
+      } else {
+        const { data, error } = await supabase
+          .from("document_templates")
+          .insert({
+            ...updatedTpl,
+            internship_id: internshipId || null
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        return data;
+      }
     } catch (err) {
       console.warn("saveDocumentTemplate failed, falling back to mock:", err);
-      return saveDocumentTemplateMock(code, htmlContent, isVisible, name);
+      return saveDocumentTemplateMock(code, htmlContent, isVisible, name, internshipId);
     }
   } else {
-    return saveDocumentTemplateMock(code, htmlContent, isVisible, name);
+    return saveDocumentTemplateMock(code, htmlContent, isVisible, name, internshipId);
   }
 }
 
-function saveDocumentTemplateMock(code: string, htmlContent: string, isVisible: boolean, name?: string): DocumentTemplate {
+function saveDocumentTemplateMock(
+  code: string,
+  htmlContent: string,
+  isVisible: boolean,
+  name?: string,
+  internshipId?: string | null
+): DocumentTemplate {
   const list = getMockStorage<DocumentTemplate[]>("mock_document_templates", []);
-  const idx = list.findIndex((t) => t.code === code);
+  const idx = list.findIndex(
+    (t) => t.code === code && (internshipId ? t.internship_id === internshipId : !t.internship_id)
+  );
   
   const templateName = name || (code === "offer_letter" ? "Offer Letter" : code === "certificate" ? "Internship Certificate" : code === "project_report" ? "Project Report" : code);
   
   const saved: DocumentTemplate = {
-    id: idx !== -1 ? list[idx].id : `dt-${code}`,
+    id: idx !== -1 ? list[idx].id : `dt-${code}-${internshipId || 'global'}`,
     code,
     name: idx !== -1 ? (name || list[idx].name) : templateName,
     html_content: htmlContent,
     is_visible: isVisible,
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
+    internship_id: internshipId || null
   };
 
   if (idx !== -1) {
@@ -1639,6 +2024,7 @@ export async function createPaymentRecord(
   orderId: string,
   amount: number
 ): Promise<Payment> {
+  invalidateCacheKey("student_payments_");
   const paymentData: Omit<Payment, "id" | "created_at"> = {
     student_id: userId,
     internship_id: internshipId,
@@ -1694,6 +2080,7 @@ export async function verifyAndCompletePayment(
   paymentId: string,
   signature: string
 ): Promise<boolean> {
+  invalidateCacheKey("student_payments_");
   const nowStr = new Date().toISOString();
   if (isSupabaseConfigured() && supabase) {
     try {
@@ -1743,6 +2130,10 @@ function verifyAndCompletePaymentMock(
 }
 
 export async function getStudentPayments(userId: string): Promise<Payment[]> {
+  const cacheKey = `student_payments_${userId}`;
+  const cached = getCachedData<Payment[]>(cacheKey);
+  if (cached) return cached;
+
   if (isSupabaseConfigured() && supabase) {
     try {
       const { data, error } = await supabase
@@ -1753,15 +2144,23 @@ export async function getStudentPayments(userId: string): Promise<Payment[]> {
         .order("created_at", { ascending: false });
       if (error) {
         console.warn("getStudentPayments failed, falling back to mock:", error);
-        return getMockStudentPayments(userId);
+        const res = getMockStudentPayments(userId);
+        setCachedData(cacheKey, res, CACHE_TTL.short);
+        return res;
       }
-      return data || [];
+      const res = data || [];
+      setCachedData(cacheKey, res, CACHE_TTL.short);
+      return res;
     } catch (err) {
       console.warn("getStudentPayments failed, falling back to mock:", err);
-      return getMockStudentPayments(userId);
+      const res = getMockStudentPayments(userId);
+      setCachedData(cacheKey, res, CACHE_TTL.short);
+      return res;
     }
   } else {
-    return getMockStudentPayments(userId);
+    const res = getMockStudentPayments(userId);
+    setCachedData(cacheKey, res, CACHE_TTL.short);
+    return res;
   }
 }
 
@@ -1776,33 +2175,132 @@ function getMockStudentPayments(userId: string): Payment[] {
 // -------------------------------------------------------------
 // DOCUMENT TEMPLATES CRUD (ADDITIONAL OPERATIONS)
 // -------------------------------------------------------------
-export async function deleteDocumentTemplate(code: string): Promise<boolean> {
+export async function deleteDocumentTemplate(code: string, internshipId?: string | null): Promise<boolean> {
+  invalidateCacheKey("document_templates_all");
   if (isSupabaseConfigured() && supabase) {
     try {
-      const { error } = await supabase
-        .from("document_templates")
-        .delete()
-        .eq("code", code);
+      let query = supabase.from("document_templates").delete().eq("code", code);
+      if (internshipId) {
+        query = query.eq("internship_id", internshipId);
+      } else {
+        query = query.is("internship_id", null);
+      }
+      const { error } = await query;
       if (error) throw error;
       return true;
     } catch (err) {
       console.warn("deleteDocumentTemplate failed, falling back to mock:", err);
-      return deleteDocumentTemplateMock(code);
+      return deleteDocumentTemplateMock(code, internshipId);
     }
   } else {
-    return deleteDocumentTemplateMock(code);
+    return deleteDocumentTemplateMock(code, internshipId);
   }
 }
 
-function deleteDocumentTemplateMock(code: string): boolean {
-  if (typeof window === "undefined") return false;
+function deleteDocumentTemplateMock(code: string, internshipId?: string | null): boolean {
   const list = getMockStorage<DocumentTemplate[]>("mock_document_templates", []);
-  const filtered = list.filter((t) => t.code !== code);
+  const filtered = list.filter(
+    (t) => !(t.code === code && (internshipId ? t.internship_id === internshipId : !t.internship_id))
+  );
   if (filtered.length !== list.length) {
     setMockStorage("mock_document_templates", filtered);
     return true;
   }
   return false;
+}
+
+export async function seedTemplatesForInternship(internshipId: string): Promise<boolean> {
+  const SEED_TEMPLATES = [
+    { code: "offer_letter", name: "Offer Letter" },
+    { code: "attendance_sheet", name: "Attendance Sheet" },
+    { code: "internship_report", name: "Internship Report" },
+    { code: "certificate", name: "Internship Certificate" },
+    { code: "completion_letter", name: "Completion Letter" },
+    { code: "assessment", name: "Assessment Form" }
+  ];
+
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const client = supabase;
+      await Promise.all(
+        SEED_TEMPLATES.map(async (tpl) => {
+          const html = await getDefaultTemplateHtmlForSeeding(tpl.code);
+          await client.from("document_templates").insert({
+            code: tpl.code,
+            name: tpl.name,
+            html_content: html,
+            is_visible: true,
+            internship_id: internshipId
+          });
+        })
+      );
+      invalidateCacheKey("document_templates_all");
+      return true;
+    } catch (e) {
+      console.error(`Failed to seed templates for internship ${internshipId} in Supabase:`, e);
+      return false;
+    }
+  } else {
+    try {
+      const list = getMockStorage<DocumentTemplate[]>("mock_document_templates", []);
+      for (const tpl of SEED_TEMPLATES) {
+        const html = await getDefaultTemplateHtmlForSeeding(tpl.code);
+        list.push({
+          id: `dt-${tpl.code}-${internshipId}`,
+          code: tpl.code,
+          name: tpl.name,
+          html_content: html,
+          is_visible: true,
+          updated_at: new Date().toISOString(),
+          internship_id: internshipId
+        });
+      }
+      setMockStorage("mock_document_templates", list);
+      invalidateCacheKey("document_templates_all");
+      return true;
+    } catch (e) {
+      console.error(`Failed to seed templates for internship ${internshipId} in mock:`, e);
+      return false;
+    }
+  }
+}
+
+async function getDefaultTemplateHtmlForSeeding(code: string): Promise<string> {
+  const rootDir = process.cwd();
+  const fileMap: Record<string, string> = {
+    offer_letter: "offer-letter.html",
+    attendance_sheet: "attendance.html",
+    internship_report: "report.html",
+    certificate: "certificate.html",
+    completion_letter: "completion-letter.html",
+    assessment: "assessment.html"
+  };
+  const fileName = fileMap[code];
+  if (!fileName) return "";
+
+  if (typeof window === "undefined") {
+    try {
+      const fs = require("fs");
+      const path = require("path");
+      const filePath = path.join(rootDir, "public", "templates", "default", fileName);
+      if (fs.existsSync(filePath)) {
+        return fs.readFileSync(filePath, "utf8");
+      }
+    } catch (e) {
+      console.warn(`Failed to read default template file ${fileName} via fs:`, e);
+    }
+  }
+
+  try {
+    const res = await fetch(`/templates/default/${fileName}`);
+    if (res.ok) {
+      return await res.text();
+    }
+  } catch (e) {
+    console.warn(`Failed to fetch default template ${fileName}:`, e);
+  }
+
+  return getFallbackTemplateHtml(code, code.replace(/_/g, " "));
 }
 
 // -------------------------------------------------------------
@@ -1971,11 +2469,14 @@ export function sanitizeInput(val: string): string {
 }
 
 export async function updateTestResult(id: string, updates: Partial<TestResult>): Promise<TestResult | null> {
+  invalidateCacheKey("test_results_");
+  invalidateCacheKey("verify_");
+  // Fetch current record for audit comparison
+  const oldResult = await getTestResultById(id);
   let reference_number = updates.reference_number;
   if (updates.passed && !reference_number) {
-    const current = await getTestResultById(id);
-    if (current && !current.reference_number) {
-      reference_number = generateReferenceNumber();
+    if (oldResult && !oldResult.reference_number) {
+      reference_number = await generateReferenceNumber();
     }
   }
 
@@ -1993,17 +2494,38 @@ export async function updateTestResult(id: string, updates: Partial<TestResult>)
         .select()
         .single();
       if (error) throw error;
+      // Audit logging
+      const adminUser = await getCurrentUser();
+      if (adminUser && oldResult) {
+        const changedFields = Object.keys(finalUpdates) as (keyof TestResult)[];
+        for (const field of changedFields) {
+          const oldVal = (oldResult as any)[field];
+          const newVal = (data as any)[field];
+          if (oldVal !== newVal) {
+            await supabase.from("result_change_history").insert({
+              admin_id: adminUser.id,
+              student_id: data.student_id,
+              test_result_id: data.id,
+              field_name: field,
+              previous_value: oldVal !== undefined ? String(oldVal) : null,
+              new_value: newVal !== undefined ? String(newVal) : null,
+              changed_at: new Date().toISOString()
+            });
+          }
+        }
+      }
       return data;
     } catch (err) {
       console.warn("updateTestResult to Supabase failed, falling back to mock:", err);
-      return updateTestResultMock(id, finalUpdates);
+      return await updateTestResultMock(id, finalUpdates);
     }
   } else {
-    return updateTestResultMock(id, finalUpdates);
+    // In mock mode, just perform update without audit logging
+    return await updateTestResultMock(id, finalUpdates);
   }
 }
 
-function updateTestResultMock(id: string, updates: Partial<TestResult>): TestResult | null {
+async function updateTestResultMock(id: string, updates: Partial<TestResult>): Promise<TestResult | null> {
   if (typeof window === "undefined") return null;
   const list = getMockStorage<TestResult[]>("mock_test_results", []);
   const idx = list.findIndex((r) => r.id === id);
@@ -2011,7 +2533,7 @@ function updateTestResultMock(id: string, updates: Partial<TestResult>): TestRes
 
   let reference_number = updates.reference_number || list[idx].reference_number;
   if (updates.passed && !reference_number) {
-    reference_number = generateReferenceNumber();
+    reference_number = await generateReferenceNumber();
   }
 
   const updated: TestResult = {
@@ -2023,4 +2545,386 @@ function updateTestResultMock(id: string, updates: Partial<TestResult>): TestRes
   setMockStorage("mock_test_results", list);
   return updated;
 }
+
+
+// -------------------------------------------------------------
+// ANNOUNCEMENTS OPERATIONS
+// -------------------------------------------------------------
+export interface Announcement {
+  id: string;
+  title: string;
+  description: string;
+  priority: "low" | "medium" | "high";
+  type: "info" | "warning" | "success";
+  active: boolean;
+  created_at: string;
+}
+
+export async function getAnnouncements(onlyActive = false): Promise<Announcement[]> {
+  const cacheKey = `announcements_${onlyActive ? 'active' : 'all'}`;
+  const cached = getCachedData<Announcement[]>(cacheKey);
+  if (cached) return cached;
+
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      let query = supabase.from("announcements").select("*");
+      if (onlyActive) {
+        query = query.eq("active", true);
+      }
+      const { data, error } = await query.order("created_at", { ascending: false });
+      if (error) {
+        console.warn("getAnnouncements query failed, falling back to mock:", error);
+        const res = getAnnouncementsMock(onlyActive);
+        setCachedData(cacheKey, res, CACHE_TTL.short);
+        return res;
+      }
+      const res = data || [];
+      setCachedData(cacheKey, res, CACHE_TTL.short);
+      return res;
+    } catch (err) {
+      console.warn("getAnnouncements failed, falling back to mock:", err);
+      const res = getAnnouncementsMock(onlyActive);
+      setCachedData(cacheKey, res, CACHE_TTL.short);
+      return res;
+    }
+  } else {
+    const res = getAnnouncementsMock(onlyActive);
+    setCachedData(cacheKey, res, CACHE_TTL.short);
+    return res;
+  }
+}
+
+function getAnnouncementsMock(onlyActive = false): Announcement[] {
+  if (typeof window === "undefined") return [];
+  const defaultMockAnnouncements: Announcement[] = [
+    {
+      id: "1",
+      title: "Platform Maintenance Scheduled",
+      description: "Scheduled maintenance on June 25th, 2026 from 2:00 AM to 6:00 AM IST. The platform may be temporarily unavailable.",
+      type: "warning",
+      priority: "high",
+      created_at: "2026-06-18T00:00:00Z",
+      active: true,
+    },
+    {
+      id: "2",
+      title: "New Internship Tracks Available",
+      description: "We have added 5 new internship tracks including AI/ML, Cloud Computing, and DevOps. Enroll now!",
+      type: "info",
+      priority: "medium",
+      created_at: "2026-06-15T00:00:00Z",
+      active: true,
+    },
+    {
+      id: "3",
+      title: "Assessment System Upgrade Complete",
+      description: "The assessment system has been upgraded with improved security and faster loading times.",
+      type: "success",
+      priority: "low",
+      created_at: "2026-06-10T00:00:00Z",
+      active: false,
+    },
+  ];
+  const list = getMockStorage<Announcement[]>("mock_announcements", defaultMockAnnouncements);
+  const sorted = [...list].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  return onlyActive ? sorted.filter(a => a.active) : sorted;
+}
+
+export async function saveAnnouncement(ann: Omit<Announcement, "id" | "created_at"> & { id?: string; created_at?: string }): Promise<Announcement> {
+  invalidateCacheKey("announcements_");
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      if (ann.id && isNaN(Number(ann.id)) && ann.id.length > 10) {
+        // Assume UUID if it's not a number and longer than 10 chars
+        const { data, error } = await supabase
+          .from("announcements")
+          .update({
+            title: ann.title,
+            description: ann.description,
+            priority: ann.priority,
+            type: ann.type,
+            active: ann.active,
+          })
+          .eq("id", ann.id)
+          .select()
+          .single();
+        if (error) throw error;
+        return data;
+      } else {
+        const { data, error } = await supabase
+          .from("announcements")
+          .insert({
+            title: ann.title,
+            description: ann.description,
+            priority: ann.priority || "medium",
+            type: ann.type || "info",
+            active: ann.active !== undefined ? ann.active : true,
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        return data;
+      }
+    } catch (err) {
+      console.warn("saveAnnouncement failed, falling back to mock:", err);
+      return saveAnnouncementMock(ann);
+    }
+  } else {
+    return saveAnnouncementMock(ann);
+  }
+}
+
+function saveAnnouncementMock(ann: Omit<Announcement, "id" | "created_at"> & { id?: string; created_at?: string }): Announcement {
+  const list = getAnnouncementsMock(false);
+  const id = ann.id && isNaN(Number(ann.id)) && ann.id.length > 10 ? ann.id : Date.now().toString();
+  const saved: Announcement = {
+    id,
+    title: ann.title,
+    description: ann.description,
+    priority: ann.priority || "medium",
+    type: ann.type || "info",
+    active: ann.active !== undefined ? ann.active : true,
+    created_at: ann.created_at || new Date().toISOString(),
+  };
+  const idx = list.findIndex(a => a.id === id);
+  if (idx !== -1) {
+    list[idx] = saved;
+  } else {
+    list.push(saved);
+  }
+  setMockStorage("mock_announcements", list);
+  // Trigger custom storage event for sync
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("storage"));
+  }
+  return saved;
+}
+
+export async function deleteAnnouncementDb(id: string): Promise<boolean> {
+  invalidateCacheKey("announcements_");
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { error } = await supabase.from("announcements").delete().eq("id", id);
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.warn("deleteAnnouncementDb failed, falling back to mock:", err);
+      return deleteAnnouncementMock(id);
+    }
+  } else {
+    return deleteAnnouncementMock(id);
+  }
+}
+
+function deleteAnnouncementMock(id: string): boolean {
+  if (typeof window === "undefined") return false;
+  const list = getAnnouncementsMock(false);
+  const filtered = list.filter(a => a.id !== id);
+  setMockStorage("mock_announcements", filtered);
+  // Trigger custom storage event for sync
+  window.dispatchEvent(new Event("storage"));
+  return true;
+}
+
+export async function getReadAnnouncementIds(studentId: string): Promise<string[]> {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("announcement_reads")
+        .select("announcement_id")
+        .eq("student_id", studentId);
+      if (error) throw error;
+      return data?.map(d => d.announcement_id) || [];
+    } catch (err) {
+      console.warn("getReadAnnouncementIds failed, falling back to mock:", err);
+      return getReadAnnouncementIdsMock(studentId);
+    }
+  } else {
+    return getReadAnnouncementIdsMock(studentId);
+  }
+}
+
+function getReadAnnouncementIdsMock(studentId: string): string[] {
+  if (typeof window === "undefined") return [];
+  const reads = getMockStorage<{ announcement_id: string; student_id: string }[]>("mock_announcement_reads", []);
+  return reads.filter(r => r.student_id === studentId).map(r => r.announcement_id);
+}
+
+export async function markAnnouncementAsRead(announcementId: string, studentId: string): Promise<boolean> {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { error } = await supabase
+        .from("announcement_reads")
+        .upsert({ announcement_id: announcementId, student_id: studentId }, { onConflict: "announcement_id,student_id" });
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.warn("markAnnouncementAsRead failed, falling back to mock:", err);
+      return markAnnouncementAsReadMock(announcementId, studentId);
+    }
+  } else {
+    return markAnnouncementAsReadMock(announcementId, studentId);
+  }
+}
+
+function markAnnouncementAsReadMock(announcementId: string, studentId: string): boolean {
+  if (typeof window === "undefined") return false;
+  const reads = getMockStorage<{ announcement_id: string; student_id: string }[]>("mock_announcement_reads", []);
+  const exists = reads.some(r => r.announcement_id === announcementId && r.student_id === studentId);
+  if (!exists) {
+    reads.push({ announcement_id: announcementId, student_id: studentId });
+    setMockStorage("mock_announcement_reads", reads);
+    // Trigger custom storage event for sync
+    window.dispatchEvent(new Event("storage"));
+  }
+  return true;
+}
+
+// -------------------------------------------------------------
+// SUPPORT TICKETS OPERATIONS
+// -------------------------------------------------------------
+export async function getSupportTickets(studentId?: string): Promise<SupportTicket[]> {
+  const cacheKey = `support_tickets_${studentId || 'all'}`;
+  const cached = getCachedData<SupportTicket[]>(cacheKey);
+  if (cached) return cached;
+
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      let query = supabase.from("support_tickets").select("*, profiles(full_name)");
+      if (studentId) {
+        query = query.eq("student_id", studentId);
+      }
+      const { data, error } = await query.order("created_at", { ascending: false });
+      if (error) {
+        console.warn("getSupportTickets query failed, falling back to mock:", error);
+        const fallback = getSupportTicketsMock(studentId);
+        setCachedData(cacheKey, fallback, CACHE_TTL.short);
+        return fallback;
+      }
+      const mapped = (data || []).map((t: any) => ({
+        id: t.id,
+        student_id: t.student_id,
+        subject: t.subject,
+        description: t.description,
+        category: t.category,
+        status: t.status,
+        admin_reply: t.admin_reply,
+        created_at: t.created_at,
+        updated_at: t.updated_at,
+        student_name: t.profiles?.full_name || "Unknown Student"
+      }));
+      setCachedData(cacheKey, mapped, CACHE_TTL.short);
+      return mapped;
+    } catch (err) {
+      console.warn("getSupportTickets failed, falling back to mock:", err);
+      const fallback = getSupportTicketsMock(studentId);
+      setCachedData(cacheKey, fallback, CACHE_TTL.short);
+      return fallback;
+    }
+  } else {
+    const fallback = getSupportTicketsMock(studentId);
+    setCachedData(cacheKey, fallback, CACHE_TTL.short);
+    return fallback;
+  }
+}
+
+function getSupportTicketsMock(studentId?: string): SupportTicket[] {
+  if (typeof window === "undefined") return [];
+  const list = getMockStorage<SupportTicket[]>("mock_support_tickets", []);
+  const profiles = getMockStorage<any[]>("mock_profiles", []);
+  const mapped = list.map((t) => {
+    const p = profiles.find((prof) => prof.id === t.student_id);
+    return {
+      ...t,
+      student_name: p?.full_name || "Student User"
+    };
+  });
+  if (studentId) {
+    return mapped.filter((t) => t.student_id === studentId);
+  }
+  return mapped;
+}
+
+export async function createSupportTicket(ticket: Omit<SupportTicket, "id" | "status" | "created_at" | "updated_at">): Promise<SupportTicket> {
+  invalidateCacheKey("support_tickets_");
+  const newTicket = {
+    ...ticket,
+    status: "open" as const,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("support_tickets")
+        .insert(newTicket)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.warn("createSupportTicket failed, falling back to mock:", err);
+      return createSupportTicketMock(newTicket);
+    }
+  } else {
+    return createSupportTicketMock(newTicket);
+  }
+}
+
+function createSupportTicketMock(ticket: any): SupportTicket {
+  if (typeof window === "undefined") return ticket;
+  const list = getMockStorage<any[]>("mock_support_tickets", []);
+  const created = {
+    ...ticket,
+    id: Math.random().toString(36).substring(2, 15)
+  };
+  list.push(created);
+  setMockStorage("mock_support_tickets", list);
+  window.dispatchEvent(new Event("storage"));
+  return created;
+}
+
+export async function updateSupportTicket(id: string, updates: Partial<SupportTicket>): Promise<SupportTicket | null> {
+  invalidateCacheKey("support_tickets_");
+  const finalUpdates = {
+    ...updates,
+    updated_at: new Date().toISOString()
+  };
+
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("support_tickets")
+        .update(finalUpdates)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.warn("updateSupportTicket failed, falling back to mock:", err);
+      return updateSupportTicketMock(id, finalUpdates);
+    }
+  } else {
+    return updateSupportTicketMock(id, finalUpdates);
+  }
+}
+
+function updateSupportTicketMock(id: string, updates: Partial<SupportTicket>): SupportTicket | null {
+  if (typeof window === "undefined") return null;
+  const list = getMockStorage<any[]>("mock_support_tickets", []);
+  const idx = list.findIndex((t) => t.id === id);
+  if (idx === -1) return null;
+  const updated = {
+    ...list[idx],
+    ...updates
+  };
+  list[idx] = updated;
+  setMockStorage("mock_support_tickets", list);
+  window.dispatchEvent(new Event("storage"));
+  return updated;
+}
+
+
 

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Internship Report - Web Development</title>
+</head>
+<body>
+  <div class="document-container">
+    {{header}}
+    <h2 style="color: #1E293B; font-size: 20px; font-weight: 800; text-align: center; text-transform: uppercase;">Internship Project Report</h2>
+    <p style="text-align: center; color: #64748B; font-size: 14px;">Track: <strong>{{internshipName}}</strong></p>
+
+    <div style="margin-top: 30px; padding: 20px; background-color: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0;">
+      <p><strong>Candidate Details:</strong></p>
+      <p>Name: {{studentName}}</p>
+      <p>College: {{collegeName}}</p>
+      <p>Duration: {{startDate}} - {{endDate}}</p>
+    </div>
+
+    <div style="margin-top: 30px;">
+      
+<h3 style="font-size: 16px; color: #1E3A8A; margin-top: 20px;">Chapter 1: Core Layouts & HTML5/CSS3</h3>
+<p>Designing modern, responsive structures using semantic elements, grid systems, flexbox alignment, and media queries.</p>
+
+<h3 style="font-size: 16px; color: #1E3A8A; margin-top: 20px;">Chapter 2: ES6+ JavaScript & Dom Manipulation</h3>
+<p>Creating dynamic page elements, handling events, calling external REST APIs, and storing persistent parameters.</p>
+
+<h3 style="font-size: 16px; color: #1E3A8A; margin-top: 20px;">Chapter 3: React & Component Architectures</h3>
+<p>Building reusable visual components using standard React Hooks (useState, useEffect, useContext) for interface control.</p>
+
+<h3 style="font-size: 16px; color: #1E3A8A; margin-top: 20px;">Chapter 4: Next.js App Router & Server Components</h3>
+<p>Building optimized pages, setting up API routes, and connecting to database layers via client SDK interfaces.</p>
+
+<h3 style="font-size: 16px; color: #1E3A8A; margin-top: 20px;">Chapter 5: Deployment & Validation</h3>
+<p>Deploying code builds to staging platforms (Vercel), executing lighthouse speed checks, and security audits.</p>
+
+    </div>
+    {{footer}}
+  </div>
+</body>
+</html>

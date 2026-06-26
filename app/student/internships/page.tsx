@@ -125,10 +125,10 @@ export default function AvailableInternships() {
           <div style="font-size: 13px; color: #64748b; margin-top: 5px;">Receipt ID: ${receiptNo}</div>
         </td>
         <td class="company-details">
-          <div class="company-name">SkillIntern</div>
-          <div>SkillIntern Vocational Training Pvt. Ltd.</div>
+          <div class="company-name">UG Intern</div>
+          <div>UG Intern Vocational Training Pvt. Ltd.</div>
           <div>Optimark Tech Hub, Sector 62, Noida, UP</div>
-          <div>Email: billing@skillintern.com</div>
+          <div>Email: billing@ugintern.com</div>
           <div>GSTIN: 09AAECS8274M1Z5 (Mock)</div>
         </td>
       </tr>
@@ -167,7 +167,7 @@ export default function AvailableInternships() {
       <tbody>
         <tr>
           <td>
-            <strong>SkillIntern Internship Evaluation Assessment Fee</strong><br />
+            <strong>UG Intern Internship Evaluation Assessment Fee</strong><br />
             <span style="font-size: 11px; color: #64748b;">Track: ${internshipTitle}</span>
           </td>
           <td style="text-align: center;">1</td>
@@ -183,7 +183,7 @@ export default function AvailableInternships() {
 
     <div class="footer">
       <p>This is a computer-generated transaction receipt verified under the Razorpay Payment Gateway API.</p>
-      <p style="margin-top: 5px; font-weight: 500; color: #4f46e5;">Thank you for using SkillIntern vocational evaluation services!</p>
+      <p style="margin-top: 5px; font-weight: 500; color: #4f46e5;">Thank you for using UG Intern vocational evaluation services!</p>
     </div>
 
     <button class="print-btn" onclick="window.print()">Print Receipt</button>
@@ -221,7 +221,7 @@ export default function AvailableInternships() {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_SvZr486cWgXNIQ",
         amount: orderData.amount,
         currency: orderData.currency,
-        name: "SkillIntern",
+        name: "UG Intern",
         description: `Assessment Fee for ${track.title}`,
         order_id: orderData.order_id,
         handler: async function (response: any) {
@@ -303,6 +303,50 @@ export default function AvailableInternships() {
     }
   };
 
+  const handleSelectInternship = async (internshipId: string) => {
+    if (!user) return;
+    const confirmLock = window.confirm(`Are you sure you want to lock your payment to this internship? You will not be able to change this later.`);
+    if (!confirmLock) return;
+
+    setPayingId(internshipId);
+    try {
+      const res = await fetch("/api/select-internship", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ internshipId, studentId: user.id })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to select internship.");
+      }
+
+      setPaidTracks(prev => {
+        const newTracks = prev.filter(t => t !== "general_credit_unused");
+        return [...newTracks, internshipId];
+      });
+
+      setPayments(prev => {
+        const updated = prev.map(p => {
+          if (p.internship_id === "general_credit_unused") {
+            return { ...p, internship_id: internshipId };
+          }
+          return p;
+        });
+        if (typeof window !== "undefined") {
+          localStorage.setItem("mock_payments", JSON.stringify(updated));
+        }
+        return updated;
+      });
+
+      alert("Internship locked successfully! We've also sent you a confirmation email. You can now start the assessment.");
+    } catch (error: any) {
+      console.error(error);
+      alert(error.message);
+    } finally {
+      setPayingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20 bg-white">
@@ -350,10 +394,10 @@ export default function AvailableInternships() {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold border transition-[color,background-color,border-color,box-shadow] duration-200 cursor-pointer ${
                 selectedCategory === cat
-                  ? "bg-indigo-50 text-indigo-650 border-indigo-200 shadow-sm font-extrabold"
-                  : "bg-white border-zinc-200 text-zinc-650 hover:bg-indigo-50/50 hover:text-indigo-650"
+                  ? "bg-indigo-600 text-white border-transparent shadow-md shadow-indigo-550/15"
+                  : "bg-white border-zinc-200 text-zinc-600 hover:bg-indigo-50/60 hover:text-indigo-600 hover:border-indigo-150"
               }`}
             >
               {cat}
@@ -537,6 +581,7 @@ export default function AvailableInternships() {
                 }
               }
               const hasPaid = !settings.payments_enabled || paidTracks.includes(selectedInternship.id);
+              const hasUnusedCredit = paidTracks.includes("general_credit_unused");
 
               return (
                 <>
@@ -591,6 +636,15 @@ export default function AvailableInternships() {
                           </button>
                         )}
                       </>
+                    ) : hasUnusedCredit ? (
+                      <button
+                        onClick={() => handleSelectInternship(selectedInternship.id)}
+                        disabled={payingId !== null}
+                        className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white active:scale-95 px-6 py-2.5 text-xs font-bold transition-all text-center cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50 shadow-sm"
+                      >
+                        {payingId === selectedInternship.id ? "Processing..." : "Lock & Unlock Internship"}
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
                     ) : (
                       <button
                         onClick={() => handlePayAndStart(selectedInternship)}

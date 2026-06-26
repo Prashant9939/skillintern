@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Assessment Result - Web Development</title>
+</head>
+<body>
+  <div class="document-container">
+    {{header}}
+    <h2 style="color: #1E293B; font-size: 20px; font-weight: 800; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px; text-align: center;">Internship Evaluation Marksheet</h2>
+    
+    <table style="margin-top: 20px;">
+      <tr><td style="font-weight: bold; width: 150px;">Student Name</td><td>{{studentName}}</td></tr>
+      <tr><td style="font-weight: bold;">College / University</td><td>{{collegeName}} / {{universityName}}</td></tr>
+      <tr><td style="font-weight: bold;">Internship Track</td><td>{{internshipName}}</td></tr>
+      <tr><td style="font-weight: bold;">Completion Date</td><td>{{endDate}}</td></tr>
+    </table>
+
+    <div style="text-align: center; margin: 30px 0; padding: 25px; background: #F5F3FF; border-radius: 12px; border: 1px solid #DDD6FE;">
+      <div style="font-size: 40px; font-weight: 900; color: #7C3AED;">{{score}}%</div>
+      <div style="font-size: 14px; font-weight: bold; color: #475569; margin-top: 8px;">Final Grade: {{grade}}</div>
+      <div style="font-size: 13px; color: #10B981; font-weight: bold; margin-top: 4px;">Assessment Result: PASSED</div>
+    </div>
+
+    <p style="font-size: 13px; color: #64748B; text-align: center;">This marksheet details the candidate's core competency score on the UG Intern MCQ Assessment Engine.</p>
+    {{footer}}
+  </div>
+</body>
+</html>

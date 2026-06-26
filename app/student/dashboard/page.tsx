@@ -19,7 +19,11 @@ import {
   Internship,
   TestResult,
   DocumentTemplate,
-  Payment
+  Payment,
+  getAnnouncements,
+  getReadAnnouncementIds,
+  markAnnouncementAsRead,
+  Announcement
 } from "@/lib/supabase/db";
 import {
   Award,
@@ -41,8 +45,10 @@ import {
   Clock,
   Clipboard,
   Bell,
-  RefreshCw
+  RefreshCw,
+  Megaphone
 } from "lucide-react";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import Link from "next/link";
 
 // Helper function to render documents with placeholders dynamically replaced
@@ -130,6 +136,36 @@ export default function StudentDashboard() {
   const [previewTitle, setPreviewTitle] = useState<string>("");
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
+  // Announcements State
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [readAnnouncementIds, setReadAnnouncementIds] = useState<string[]>([]);
+  const [showAnnouncementDrawer, setShowAnnouncementDrawer] = useState(false);
+  const [announcementTab, setAnnouncementTab] = useState<"unread" | "history">("unread");
+
+  const fetchAnnouncementsAndReads = async (userId: string) => {
+    try {
+      const [anns, reads] = await Promise.all([
+        getAnnouncements(false), // Fetch all active and inactive for history
+        getReadAnnouncementIds(userId)
+      ]);
+      setAnnouncements(anns);
+      setReadAnnouncementIds(reads);
+    } catch (err) {
+      console.error("Error loading announcements and reads:", err);
+    }
+  };
+
+  const handleMarkAsRead = async (announcementId: string) => {
+    if (!user) return;
+    try {
+      await markAnnouncementAsRead(announcementId, user.id);
+      setReadAnnouncementIds(prev => [...prev, announcementId]);
+      fetchAnnouncementsAndReads(user.id);
+    } catch (err) {
+      console.error("Error marking announcement as read:", err);
+    }
+  };
+
   useEffect(() => {
     async function loadDashboardData() {
       try {
@@ -148,6 +184,7 @@ export default function StudentDashboard() {
           setProfile(prof);
           setTemplates(tpls);
           setPayments(pays);
+          await fetchAnnouncementsAndReads(u.id);
         }
       } catch (err) {
         console.error("Error loading dashboard data", err);
@@ -157,6 +194,45 @@ export default function StudentDashboard() {
     }
     loadDashboardData();
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Supabase real-time updates
+    if (isSupabaseConfigured() && supabase) {
+      const channel = supabase
+        .channel("student-dashboard-announcements-channel")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "announcements" },
+          () => {
+            fetchAnnouncementsAndReads(user.id);
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "announcement_reads" },
+          () => {
+            fetchAnnouncementsAndReads(user.id);
+          }
+        )
+        .subscribe();
+      return () => {
+        if (supabase) {
+          supabase.removeChannel(channel);
+        }
+      };
+    }
+
+    // Storage event for mock sync across tabs
+    const handleStorageChange = () => {
+      fetchAnnouncementsAndReads(user.id);
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [user]);
 
   const handleViewDocument = (tplCode: string, result: TestResult) => {
     const tpl = templates.find((t) => t.code === tplCode);
@@ -220,10 +296,10 @@ export default function StudentDashboard() {
           <div style="font-size: 13px; color: #64748b; margin-top: 5px;">Receipt ID: ${receiptNo}</div>
         </td>
         <td class="company-details">
-          <div class="company-name">SkillIntern</div>
-          <div>SkillIntern Vocational Training Pvt. Ltd.</div>
+          <div class="company-name">UG Intern</div>
+          <div>UG Intern Vocational Training Pvt. Ltd.</div>
           <div>Optimark Tech Hub, Sector 62, Noida, UP</div>
-          <div>Email: billing@skillintern.com</div>
+          <div>Email: billing@ugintern.com</div>
           <div>GSTIN: 09AAECS8274M1Z5 (Mock)</div>
         </td>
       </tr>
@@ -266,7 +342,7 @@ export default function StudentDashboard() {
       <tbody>
         <tr>
           <td>
-            <strong>SkillIntern Internship Evaluation Assessment Fee</strong><br />
+            <strong>UG Intern Internship Evaluation Assessment Fee</strong><br />
             <span style="font-size: 11px; color: #64748b;">Track: ${internshipTitle}</span>
           </td>
           <td style="text-align: center;">1</td>
@@ -282,7 +358,7 @@ export default function StudentDashboard() {
 
     <div class="footer">
       <p>This is a computer-generated transaction receipt verified under the Razorpay Payment Gateway API.</p>
-      <p style="margin-top: 5px; font-weight: 500; color: #4f46e5;">Thank you for using SkillIntern vocational evaluation services!</p>
+      <p style="margin-top: 5px; font-weight: 500; color: #4f46e5;">Thank you for using UG Intern vocational evaluation services!</p>
     </div>
 
     <button class="print-btn" onclick="window.print()">Print Receipt</button>
@@ -526,9 +602,17 @@ export default function StudentDashboard() {
           </h2>
           <p className="text-zinc-450 text-sm mt-1.5 font-light">Track your progress and continue your learning journey.</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#5B5FF7]/20 text-[#5B5FF7] bg-[#5B5FF7]/5 hover:bg-[#5B5FF7]/10 transition-all font-bold text-xs cursor-pointer shadow-sm shrink-0">
+        <button 
+          onClick={() => setShowAnnouncementDrawer(true)}
+          className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#5B5FF7]/20 text-[#5B5FF7] bg-[#5B5FF7]/5 hover:bg-[#5B5FF7]/10 transition-all font-bold text-xs cursor-pointer shadow-sm shrink-0"
+        >
           <Bell className="h-4 w-4" />
-          View Announcements
+          <span>View Announcements</span>
+          {announcements.filter(a => a.active && !readAnnouncementIds.includes(a.id)).length > 0 && (
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-extrabold text-white animate-bounce shadow-md border border-white">
+              {announcements.filter(a => a.active && !readAnnouncementIds.includes(a.id)).length}
+            </span>
+          )}
         </button>
       </section>
 
@@ -634,7 +718,7 @@ export default function StudentDashboard() {
               Great Progress, {profile?.full_name || user?.full_name || "Student"}! 🚀
             </h4>
             <p className="text-zinc-500 text-xs mt-1.5 font-light leading-relaxed max-w-xl">
-              You are doing great in your {activeTrackDetails[0]?.trackTitle || "SkillIntern"} track. Keep going and complete your next assessment.
+              You are doing great in your {activeTrackDetails[0]?.trackTitle || "UG Intern"} track. Keep going and complete your next assessment.
             </p>
           </div>
         </div>
@@ -755,6 +839,152 @@ export default function StudentDashboard() {
                 className="w-full h-full border border-zinc-200 bg-white rounded-2xl shadow-inner"
                 sandbox="allow-modals allow-scripts allow-same-origin allow-downloads"
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ANNOUNCEMENT SIDE DRAWER */}
+      {showAnnouncementDrawer && (
+        <div className="fixed inset-0 z-50 overflow-hidden animate-fade-in">
+          {/* Backdrop overlay */}
+          <div 
+            className="absolute inset-0 bg-zinc-900/40 backdrop-blur-xs transition-opacity"
+            onClick={() => setShowAnnouncementDrawer(false)}
+          />
+          <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+            <div className="pointer-events-auto w-screen max-w-md transform transition-all duration-500 ease-in-out bg-white shadow-2xl flex flex-col h-full border-l border-zinc-150 animate-slide-in-right">
+              {/* Header */}
+              <div className="px-6 py-5 border-b border-zinc-150/80 flex items-center justify-between bg-zinc-55">
+                <div className="flex items-center gap-2.5">
+                  <div className="relative h-9 w-9 rounded-xl bg-[#5B5FF7]/10 flex items-center justify-center text-[#5B5FF7]">
+                    <Bell className="h-4.5 w-4.5" />
+                    {announcements.filter(a => a.active && !readAnnouncementIds.includes(a.id)).length > 0 && (
+                      <span className="absolute top-1 right-1 flex h-2 w-2 rounded-full bg-rose-500 animate-ping" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-extrabold text-zinc-900 tracking-tight">Announcements</h3>
+                    <p className="text-[10px] text-zinc-400 font-semibold mt-0.5 uppercase tracking-wider">
+                      {announcements.filter(a => a.active && !readAnnouncementIds.includes(a.id)).length} unread notification(s)
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAnnouncementDrawer(false)}
+                  className="p-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-450 hover:text-zinc-800 transition-all cursor-pointer"
+                >
+                  <XCircle className="h-4.5 w-4.5" />
+                </button>
+              </div>
+
+              {/* Tabs */}
+              <div className="px-6 pt-4 pb-2 border-b border-zinc-100 flex gap-4">
+                <button
+                  onClick={() => setAnnouncementTab("unread")}
+                  className={`pb-2 text-xs font-bold transition-all relative cursor-pointer ${
+                    announcementTab === "unread" ? "text-[#5B5FF7]" : "text-zinc-450 hover:text-zinc-700"
+                  }`}
+                >
+                  Unread ({announcements.filter(a => a.active && !readAnnouncementIds.includes(a.id)).length})
+                  {announcementTab === "unread" && (
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#5B5FF7] rounded-full" />
+                  )}
+                </button>
+                <button
+                  onClick={() => setAnnouncementTab("history")}
+                  className={`pb-2 text-xs font-bold transition-all relative cursor-pointer ${
+                    announcementTab === "history" ? "text-[#5B5FF7]" : "text-zinc-450 hover:text-zinc-700"
+                  }`}
+                >
+                  History ({announcements.length})
+                  {announcementTab === "history" && (
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#5B5FF7] rounded-full" />
+                  )}
+                </button>
+              </div>
+
+              {/* Scrollable list */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-zinc-50/30">
+                {(() => {
+                  const filtered = announcementTab === "unread"
+                    ? announcements.filter(a => a.active && !readAnnouncementIds.includes(a.id))
+                    : announcements;
+
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="text-center py-16 px-4">
+                        <Megaphone className="h-10 w-10 mx-auto text-zinc-350 mb-3" />
+                        <p className="text-xs text-zinc-850 font-bold">No announcements found</p>
+                        <p className="text-[11px] text-zinc-450 mt-1">
+                          {announcementTab === "unread"
+                            ? "You've read all published announcements. Great job!"
+                            : "No announcements have been published yet."}
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  return filtered.map((ann) => {
+                    const isUnread = ann.active && !readAnnouncementIds.includes(ann.id);
+                    return (
+                      <div
+                        key={ann.id}
+                        className={`bg-white border rounded-2xl p-5 shadow-xs relative transition-all hover:shadow-md ${
+                          isUnread ? "border-indigo-100 ring-2 ring-indigo-500/5" : "border-zinc-150 opacity-90"
+                        }`}
+                      >
+                        {/* Glow indicator for new announcements */}
+                        {isUnread && (
+                          <span className="absolute top-4 right-4 flex h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
+                        )}
+
+                        <div className="text-left space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span
+                              className={`text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
+                                ann.priority === "high"
+                                  ? "bg-rose-100 text-rose-700 border border-rose-200"
+                                  : ann.priority === "medium"
+                                  ? "bg-amber-100 text-amber-700 border border-amber-200"
+                                  : "bg-blue-100 text-blue-750 border border-blue-200"
+                              }`}
+                            >
+                              {ann.priority}
+                            </span>
+                            <span className="text-[9px] text-zinc-400 font-bold">
+                              {new Date(ann.created_at).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit"
+                              })}
+                            </span>
+                          </div>
+
+                          <h4 className="text-xs font-extrabold text-zinc-900 leading-snug">{ann.title}</h4>
+                          <p className="text-xs text-zinc-500 font-light leading-relaxed whitespace-pre-line">
+                            {ann.description}
+                          </p>
+
+                          {isUnread && (
+                            <div className="pt-2 flex justify-end">
+                              <button
+                                onClick={() => handleMarkAsRead(ann.id)}
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#5B5FF7] hover:bg-[#4A4EE6] text-white text-[10px] font-bold transition-all cursor-pointer shadow-sm active:scale-95"
+                              >
+                                <CheckCircle className="h-3 w-3" />
+                                Mark as Read
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
             </div>
           </div>
         </div>

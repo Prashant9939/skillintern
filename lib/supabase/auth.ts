@@ -25,7 +25,17 @@ export interface UserSession {
 }
 
 let serverSession: UserSession | null = null;
-const STORAGE_KEY = "skillintern_session";
+const STORAGE_KEY = "ugintern_session";
+
+// Session Cache Variables
+let lastVerifiedUser: UserSession | null = null;
+let lastVerificationTime = 0;
+const SESSION_VERIFICATION_TTL = 10 * 1000; // 10 seconds
+
+export const invalidateSessionCache = () => {
+  lastVerifiedUser = null;
+  lastVerificationTime = 0;
+};
 
 export const getStoredSession = (): UserSession | null => {
   if (typeof window === "undefined") return serverSession;
@@ -34,6 +44,7 @@ export const getStoredSession = (): UserSession | null => {
 };
 
 export const setStoredSession = (session: UserSession | null) => {
+  invalidateSessionCache();
   if (typeof window === "undefined") {
     serverSession = session;
     return;
@@ -41,14 +52,14 @@ export const setStoredSession = (session: UserSession | null) => {
   if (session) {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(session));
     try {
-      document.cookie = `skillintern_session=${encodeURIComponent(JSON.stringify(session))}; path=/; SameSite=Lax`;
+      document.cookie = `ugintern_session=${encodeURIComponent(JSON.stringify(session))}; path=/; SameSite=Lax`;
     } catch (e) {
       console.warn("Failed to set session cookie:", e);
     }
   } else {
     sessionStorage.removeItem(STORAGE_KEY);
     try {
-      document.cookie = `skillintern_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
+      document.cookie = `ugintern_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
     } catch (e) {
       console.warn("Failed to clear session cookie:", e);
     }
@@ -56,6 +67,7 @@ export const setStoredSession = (session: UserSession | null) => {
 };
 
 export const updateStoredSessionFields = (fields: Partial<UserSession>) => {
+  invalidateSessionCache();
   const current = getStoredSession();
   if (current) {
     const updated = { ...current, ...fields };
@@ -76,17 +88,30 @@ export function validatePhoneNumber(phone: string): boolean {
   return phoneRegex.test(phone.replace(/[\s-]/g, ""));
 }
 
-// -------------------------------------------------------------
-// SIGN UP LOGIC
-// -------------------------------------------------------------
 export async function signUpUser(
   email: string,
   password: string,
   fullName: string,
-  phoneNumber: string
+  phoneNumber: string,
+  college: string,
+  university: string,
+  course: string,
+  semester: string,
+  address: string,
+  documentId: string,
+  departmentStream: string,
+  batch: string,
+  rollNumber: string,
+  registrationNumber: string,
+  emergencyContactName: string,
+  emergencyContactNumber: string,
+  emergencyContactRelation: string,
+  agreedTerms: boolean,
+  agreedUpdates: boolean,
+  dateOfBirth: string
 ) {
   // Input Validations
-  if (!email || !password || !fullName || !phoneNumber) {
+  if (!email || !password || !fullName || !phoneNumber || !college || !university || !course || !semester || !address || !departmentStream || !batch || !rollNumber || !registrationNumber || !emergencyContactName || !emergencyContactNumber || !emergencyContactRelation || !dateOfBirth) {
     throw new Error("All fields are required.");
   }
   const sanitizedEmail = email.trim().replace(/['"\\;%_]/g, "");
@@ -112,17 +137,17 @@ export async function signUpUser(
 
   if (isSupabaseConfigured() && supabase) {
     try {
-      return await serverSignUpUser(sanitizedEmail, password, sanitizedFullName, sanitizedPhone);
+      return await serverSignUpUser(sanitizedEmail, password, sanitizedFullName, sanitizedPhone, college, university, course, semester, address, documentId, departmentStream, batch, rollNumber, registrationNumber, emergencyContactName, emergencyContactNumber, emergencyContactRelation, agreedTerms, agreedUpdates, dateOfBirth);
     } catch (err: any) {
       console.warn("Supabase custom signup failed, falling back to mock registration:", err);
       // If table profiles doesn't exist, we fall back to mock signup so the UI works
       if (err.message.includes("does not exist") || err.message.includes("schema cache")) {
-        return signUpMockUser(sanitizedEmail, password, sanitizedFullName, sanitizedPhone);
+        return signUpMockUser(sanitizedEmail, password, sanitizedFullName, sanitizedPhone, college, university, course, semester, address, documentId, departmentStream, batch, rollNumber, registrationNumber, emergencyContactName, emergencyContactNumber, emergencyContactRelation, agreedTerms, agreedUpdates, dateOfBirth);
       }
       throw err;
     }
   } else {
-    return signUpMockUser(sanitizedEmail, password, sanitizedFullName, sanitizedPhone);
+    return signUpMockUser(sanitizedEmail, password, sanitizedFullName, sanitizedPhone, college, university, course, semester, address, documentId, departmentStream, batch, rollNumber, registrationNumber, emergencyContactName, emergencyContactNumber, emergencyContactRelation, agreedTerms, agreedUpdates, dateOfBirth);
   }
 }
 
@@ -155,7 +180,7 @@ export async function loginUser(emailOrPhone: string, password: string) {
   if (isSupabaseConfigured() && supabase) {
     try {
       // Auto-seed admin to Supabase DB if it's the admin logging in
-      if (sanitizedInput.toLowerCase() === "admin@skillintern.com") {
+      if (sanitizedInput.toLowerCase() === "admin@ugintern.com") {
         await seedAdminAccount();
       }
 
@@ -371,6 +396,17 @@ export async function getCurrentUser(): Promise<UserSession | null> {
   const session = getStoredSession();
   if (!session) return null;
 
+  // Check in-memory cache
+  const now = Date.now();
+  if (
+    lastVerifiedUser &&
+    lastVerifiedUser.id === session.id &&
+    lastVerifiedUser.role === session.role &&
+    (now - lastVerificationTime) < SESSION_VERIFICATION_TTL
+  ) {
+    return lastVerifiedUser;
+  }
+
   if (isSupabaseConfigured() && supabase) {
     try {
       const { data: user, error } = await supabase
@@ -396,7 +432,7 @@ export async function getCurrentUser(): Promise<UserSession | null> {
         return null;
       }
 
-      return {
+      const validatedUser: UserSession = {
         id: user.id,
         email: user.email,
         full_name: user.full_name,
@@ -405,6 +441,10 @@ export async function getCurrentUser(): Promise<UserSession | null> {
         role: session.role,
         profile_completed: user.role === "admin" ? true : !!user.profile_completed
       };
+
+      lastVerifiedUser = validatedUser;
+      lastVerificationTime = Date.now();
+      return validatedUser;
     } catch (err) {
       console.warn("getCurrentUser database verification failed:", err);
       return session;
@@ -419,17 +459,19 @@ export async function getCurrentUser(): Promise<UserSession | null> {
         return null;
       }
       
-      let expectedRole = user.role;
-      if (user.role === "admin") {
-        if (sessionStorage.getItem("admin_student_view_active") === "true") {
-          expectedRole = session.role;
-        }
-      }
-      
-      if (session.role !== expectedRole) {
-        setStoredSession(null);
-        return null;
-      }
+      const validatedUser: UserSession = {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        phone_number: user.phone_number,
+        department_stream: user.department_stream || undefined,
+        role: session.role,
+        profile_completed: user.role === "admin" ? true : !!user.profile_completed
+      };
+
+      lastVerifiedUser = validatedUser;
+      lastVerificationTime = Date.now();
+      return validatedUser;
     }
     return session;
   }
@@ -442,12 +484,28 @@ function signUpMockUser(
   email: string,
   password: string,
   fullName: string,
-  phoneNumber: string
+  phoneNumber: string,
+  college: string,
+  university: string,
+  course: string,
+  semester: string,
+  address: string,
+  documentId: string,
+  departmentStream: string,
+  batch: string,
+  rollNumber: string,
+  registrationNumber: string,
+  emergencyContactName: string,
+  emergencyContactNumber: string,
+  emergencyContactRelation: string,
+  agreedTerms: boolean,
+  agreedUpdates: boolean,
+  dateOfBirth: string
 ) {
   if (typeof window === "undefined") throw new Error("Mock registration only supported in browser");
 
   // Block reserved admin email from public registration
-  if (email.toLowerCase() === "admin@skillintern.com") {
+  if (email.toLowerCase() === "admin@ugintern.com") {
     throw new Error("This email address is reserved. Please use a different email.");
   }
 
@@ -458,11 +516,11 @@ function signUpMockUser(
   const phoneExists = profiles.some((p: any) => p.phone_number === phoneNumber);
 
   if (emailExists && phoneExists) {
-    throw new Error("An account already exists with these credentials.");
+    throw new Error("Both your email and phone number already exist in the database.");
   } else if (emailExists) {
-    throw new Error("An account with this email already exists.");
+    throw new Error("Your email already exists in the database.");
   } else if (phoneExists) {
-    throw new Error("An account with this phone number already exists.");
+    throw new Error("Your phone number already exists in the database.");
   }
 
   const newProfile = {
@@ -471,8 +529,24 @@ function signUpMockUser(
     password,
     full_name: fullName,
     phone_number: phoneNumber,
+    college_name: college,
+    university_name: university,
+    degree: course,
+    semester: semester,
+    academic_session: batch,
+    department_stream: departmentStream,
+    roll_number: rollNumber,
+    registration_number: registrationNumber,
+    full_address: address,
+    document_id: documentId,
+    emergency_contact_name: emergencyContactName,
+    emergency_contact_number: emergencyContactNumber,
+    emergency_contact_relation: emergencyContactRelation,
+    agreed_terms: agreedTerms,
+    agreed_updates: agreedUpdates,
+    date_of_birth: dateOfBirth,
     role: "student",   // always student — admins are only created via createAdminUser
-    profile_completed: false,
+    profile_completed: true,
     created_at: new Date().toISOString(),
   };
 
@@ -485,7 +559,7 @@ function signUpMockUser(
 function loginMockUser(emailOrPhone: string, password: string) {
   if (typeof window === "undefined") throw new Error("Mock login only supported in browser");
 
-  const ADMIN_EMAIL = "admin@skillintern.com";
+  const ADMIN_EMAIL = "admin@ugintern.com";
   const ADMIN_PASSWORD = "Shiwam@99";
 
   let profiles: any[] = JSON.parse(localStorage.getItem("mock_profiles") || "[]");

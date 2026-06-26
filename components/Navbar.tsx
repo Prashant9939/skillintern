@@ -9,14 +9,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { 
-  getCurrentUser, 
-  signOut, 
-  UserSession, 
-  devToggleRole 
+import {
+  getCurrentUser,
+  signOut,
+  UserSession,
+  devToggleRole
 } from "@/lib/supabase/auth";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 import { Menu, X, ShieldAlert, LogOut, LayoutDashboard, Briefcase, Info, Mail, LogIn, UserPlus } from "lucide-react";
+import { BRANDING } from "@/config/branding";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -57,15 +58,15 @@ export default function Navbar() {
       <nav className="glass-navbar rounded-2xl relative">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            {/* Logo */}
             <div className="flex items-center">
-              <Link href="/" className="group flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-500 font-extrabold text-white shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-all">
-                  SI
-                </div>
-                <span className="text-xl font-extrabold tracking-tight text-zinc-800">
-                  Skill<span className="text-indigo-600">Intern</span>
-                </span>
+              <Link
+                href={user ? (user.role === "admin" ? "/admin/dashboard" : "/student/dashboard") : "/"}
+                className="group flex items-center gap-2"
+              >
+                <img
+                  src={BRANDING.logoIcon}
+                  className="h-12 w-auto object-contain group-hover:scale-105 transition-all"
+                />
               </Link>
             </div>
 
@@ -75,9 +76,8 @@ export default function Navbar() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`text-sm font-semibold transition-colors hover:text-indigo-600 relative py-1.5 px-1 ${
-                    isActive(link.href) ? "text-indigo-600 font-bold" : "text-zinc-650"
-                  }`}
+                  className={`text-sm font-semibold transition-colors hover:text-indigo-600 relative py-1.5 px-1 ${isActive(link.href) ? "text-indigo-600 font-bold" : "text-zinc-650"
+                    }`}
                 >
                   {link.name}
                   {isActive(link.href) && (
@@ -158,9 +158,8 @@ export default function Navbar() {
                 key={link.name}
                 href={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`block rounded-xl px-4 py-2.5 text-base font-semibold transition-colors ${
-                  isActive(link.href) ? "bg-indigo-500/5 text-indigo-600" : "text-zinc-660 hover:bg-zinc-50 hover:text-indigo-600"
-                }`}
+                className={`block rounded-xl px-4 py-2.5 text-base font-semibold transition-colors ${isActive(link.href) ? "bg-indigo-500/5 text-indigo-600" : "text-zinc-660 hover:bg-zinc-50 hover:text-indigo-600"
+                  }`}
               >
                 {link.name}
               </Link>

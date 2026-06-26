@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Attendance Record - Web Development</title>
+</head>
+<body>
+  <div class="document-container">
+    {{header}}
+    <h2 style="color: #1E293B; font-size: 20px; font-weight: 800; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px;">Internship Attendance Record</h2>
+    
+    <table style="margin-top: 15px;">
+      <tr><td style="font-weight: bold; width: 150px;">Student Name</td><td>{{studentName}}</td></tr>
+      <tr><td style="font-weight: bold;">Internship Track</td><td>{{internshipName}}</td></tr>
+      <tr><td style="font-weight: bold;">Duration</td><td>{{startDate}} to {{endDate}}</td></tr>
+    </table>
+
+    <h3 style="margin-top: 25px; font-size: 15px; color: #475569;">Attendance Log Checkpoints:</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+      <thead>
+        <tr>
+          <th>Checkpoint Week</th>
+          <th>Dates Included</th>
+          <th>Required Hours</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{attendanceRows}}
+      </tbody>
+    </table>
+    {{footer}}
+  </div>
+</body>
+</html>
