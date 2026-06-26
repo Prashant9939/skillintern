@@ -1,16 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Analytics } from "@vercel/analytics/next"
 import { getCurrentUser, signOut, UserSession, devToggleRole } from "@/lib/supabase/auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Footer from "@/components/Footer";
-import { 
-  Shield, 
-  LayoutDashboard, 
-  Briefcase, 
-  HelpCircle, 
-  Users, 
+import {
+  Shield,
+  LayoutDashboard,
+  Briefcase,
+  HelpCircle,
+  Users,
   LogOut,
   Menu,
   X,
@@ -96,9 +97,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <header className="hidden md:flex h-18 items-center justify-between px-8 border-b border-zinc-155/85 bg-white shrink-0 sticky top-0 z-40">
         <div className="flex items-center gap-3">
           <Link href={logoHref} className="flex items-center gap-2.5 group">
-            <img 
-              src="/logo-icon.png" 
-              className="h-9 w-auto object-contain group-hover:scale-105 transition-all" 
+            <img
+              src="/logo-icon.png"
+              className="h-9 w-auto object-contain group-hover:scale-105 transition-all"
             />
           </Link>
         </div>
@@ -113,7 +114,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           {/* Profile Dropdown */}
           <div className="relative">
-            <button 
+            <button
               onClick={() => setUserDropdownOpen(!userDropdownOpen)}
               className="flex items-center gap-3 hover:bg-slate-50 p-1.5 rounded-xl transition-all cursor-pointer border border-transparent hover:border-zinc-150"
             >
@@ -154,9 +155,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Mobile Sticky Header */}
       <header className="sticky top-0 z-30 md:hidden flex h-16 w-full items-center justify-between border-b border-zinc-200/80 bg-white/95 backdrop-blur px-4 shadow-sm shrink-0">
         <Link href={logoHref} className="flex items-center gap-2 font-bold text-zinc-900">
-          <img 
-            src="/logo-icon.png" 
-            className="h-10 w-auto object-contain" 
+          <img
+            src="/logo-icon.png"
+            className="h-10 w-auto object-contain"
           />
         </Link>
         <button
@@ -170,7 +171,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Mobile Sidebar Overlay */}
       {mobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-zinc-900/50 backdrop-blur-sm md:hidden transition-opacity duration-300"
           onClick={() => setMobileMenuOpen(false)}
         />
@@ -184,9 +185,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       `}>
         <div className="flex h-16 items-center justify-between px-6 border-b border-zinc-200/60 shrink-0">
           <Link href={logoHref} className="flex items-center gap-2 font-bold text-zinc-800" onClick={() => setMobileMenuOpen(false)}>
-            <img 
-              src="/logo-icon.png" 
-              className="h-9 w-auto object-contain" 
+            <img
+              src="/logo-icon.png"
+              className="h-9 w-auto object-contain"
             />
           </Link>
           <button
@@ -207,11 +208,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 key={item.name}
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl border transition-all cursor-pointer ${
-                  active
+                className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl border transition-all cursor-pointer ${active
                     ? "bg-gradient-to-r from-[#5B5FF7] to-[#7B7FFA] text-white border-transparent shadow-md shadow-[#5B5FF7]/15"
                     : "text-zinc-650 hover:bg-indigo-50/75 hover:text-indigo-700 active:bg-indigo-100/80 active:scale-95 border-transparent"
-                }`}
+                  }`}
               >
                 <Icon className="h-4.5 w-4.5" />
                 {item.name}
@@ -229,11 +229,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 key={item.name}
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl border transition-all cursor-pointer ${
-                  active
+                className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl border transition-all cursor-pointer ${active
                     ? "bg-gradient-to-r from-[#5B5FF7] to-[#7B7FFA] text-white border-transparent shadow-md shadow-[#5B5FF7]/15"
                     : "text-zinc-650 hover:bg-indigo-50/75 hover:text-indigo-700 active:bg-indigo-100/80 active:scale-95 border-transparent"
-                }`}
+                  }`}
               >
                 <Icon className="h-4.5 w-4.5" />
                 {item.name}
@@ -266,10 +265,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Main Workspace Layout (Full Screen) */}
       <div className="w-full flex-1 flex min-h-0 overflow-hidden">
-        
+
         {/* Left Sidebar (Desktop) */}
         <aside className="hidden md:flex w-[260px] flex-col border-r border-zinc-150/85 bg-white shrink-0 justify-between p-6 sticky top-18 h-[calc(100vh-4.5rem)] overflow-y-auto">
-          
+
           {/* Sidebar Navigation */}
           <nav className="space-y-1">
             {menuItems.map((item) => {
@@ -279,11 +278,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 text-[14px] font-semibold rounded-xl transition-all cursor-pointer ${
-                    active
+                  className={`flex items-center gap-3 px-4 py-3 text-[14px] font-semibold rounded-xl transition-all cursor-pointer ${active
                       ? "bg-gradient-to-r from-[#5B5FF7] to-[#7B7FFA] text-white shadow-md shadow-[#5B5FF7]/10"
                       : "text-zinc-550 hover:bg-slate-50 hover:text-zinc-800 transition-colors border-transparent"
-                  }`}
+                    }`}
                 >
                   <Icon className="h-4.5 w-4.5" />
                   {item.name}
@@ -300,11 +298,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 text-[14px] font-semibold rounded-xl transition-all cursor-pointer ${
-                    active
+                  className={`flex items-center gap-3 px-4 py-3 text-[14px] font-semibold rounded-xl transition-all cursor-pointer ${active
                       ? "bg-gradient-to-r from-[#5B5FF7] to-[#7B7FFA] text-white shadow-md shadow-[#5B5FF7]/10"
                       : "text-zinc-550 hover:bg-slate-50 hover:text-zinc-800 transition-colors border-transparent"
-                  }`}
+                    }`}
                 >
                   <Icon className="h-4.5 w-4.5" />
                   {item.name}
