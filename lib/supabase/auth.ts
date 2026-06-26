@@ -25,7 +25,7 @@ export interface UserSession {
 }
 
 let serverSession: UserSession | null = null;
-const STORAGE_KEY = "ugintern_session";
+const STORAGE_KEY = "iqintern_session";
 
 // Session Cache Variables
 let lastVerifiedUser: UserSession | null = null;
@@ -52,14 +52,14 @@ export const setStoredSession = (session: UserSession | null) => {
   if (session) {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(session));
     try {
-      document.cookie = `ugintern_session=${encodeURIComponent(JSON.stringify(session))}; path=/; SameSite=Lax`;
+      document.cookie = `iqintern_session=${encodeURIComponent(JSON.stringify(session))}; path=/; SameSite=Lax`;
     } catch (e) {
       console.warn("Failed to set session cookie:", e);
     }
   } else {
     sessionStorage.removeItem(STORAGE_KEY);
     try {
-      document.cookie = `ugintern_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
+      document.cookie = `iqintern_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
     } catch (e) {
       console.warn("Failed to clear session cookie:", e);
     }
@@ -180,7 +180,7 @@ export async function loginUser(emailOrPhone: string, password: string) {
   if (isSupabaseConfigured() && supabase) {
     try {
       // Auto-seed admin to Supabase DB if it's the admin logging in
-      if (sanitizedInput.toLowerCase() === "admin@ugintern.com") {
+      if (sanitizedInput.toLowerCase() === "admin@iqintern.com") {
         await seedAdminAccount();
       }
 
@@ -505,7 +505,7 @@ function signUpMockUser(
   if (typeof window === "undefined") throw new Error("Mock registration only supported in browser");
 
   // Block reserved admin email from public registration
-  if (email.toLowerCase() === "admin@ugintern.com") {
+  if (email.toLowerCase() === "admin@iqintern.com") {
     throw new Error("This email address is reserved. Please use a different email.");
   }
 
@@ -559,7 +559,7 @@ function signUpMockUser(
 function loginMockUser(emailOrPhone: string, password: string) {
   if (typeof window === "undefined") throw new Error("Mock login only supported in browser");
 
-  const ADMIN_EMAIL = "admin@ugintern.com";
+  const ADMIN_EMAIL = "admin@iqintern.com";
   const ADMIN_PASSWORD = "Shiwam@99";
 
   let profiles: any[] = JSON.parse(localStorage.getItem("mock_profiles") || "[]");

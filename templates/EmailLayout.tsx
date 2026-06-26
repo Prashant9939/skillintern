@@ -5,7 +5,7 @@ export function getEmailLayout(title: string, contentHtml: string): string {
         {/* Header/Banner Section */}
         <tr>
           <td style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #8B5CF6 100%); padding: 40px 30px; text-align: center;">
-            <h1 style="color: #FFFFFF; margin: 0 0 10px 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">UG Intern</h1>
+            <h1 style="color: #FFFFFF; margin: 0 0 10px 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">IQ Intern</h1>
             <p style="color: #E0E7FF; margin: 0; font-size: 16px; font-weight: 400;">${title}</p>
           </td>
         </tr>
@@ -25,7 +25,7 @@ export function getEmailLayout(title: string, contentHtml: string): string {
               Contact us: <a href="mailto:prashantshiwam@gmail.com" style="color: #4F46E5; text-decoration: none;">prashantshiwam@gmail.com</a>
             </p>
             <p style="font-size: 12px; color: #94A3B8; margin: 0;">
-              &copy; ${new Date().getFullYear()} UG Intern. All rights reserved.
+              &copy; ${new Date().getFullYear()} IQ Intern. All rights reserved.
             </p>
             <p style="font-size: 11px; color: #94A3B8; margin: 4px 0 0 0; font-style: italic;">
               Empowering Students, Shaping Future

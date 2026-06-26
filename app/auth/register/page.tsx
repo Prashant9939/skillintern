@@ -26,9 +26,9 @@ export default function Register() {
   const handleClearMockData = () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("mock_profiles");
-      localStorage.removeItem("ugintern_session");
-      sessionStorage.removeItem("ugintern_session");
-      document.cookie = "ugintern_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+      localStorage.removeItem("iqintern_session");
+      sessionStorage.removeItem("iqintern_session");
+      document.cookie = "iqintern_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
       alert("Local mock database cleared successfully! Reloading page...");
       window.location.reload();
     }
@@ -299,7 +299,7 @@ export default function Register() {
               <div className="text-left">
                 <div className="text-[9px] font-bold text-indigo-200 uppercase tracking-wider">Verified Offer</div>
                 <div className="text-[11px] font-extrabold text-white flex items-center gap-1">
-                  <span>UG Intern Ltd.</span>
+                  <span>IQ Intern Ltd.</span>
                   <span className="text-[8px] text-emerald-300 font-bold px-1.5 py-0.5 bg-emerald-500/20 rounded-full">Active</span>
                 </div>
               </div>
@@ -874,7 +874,7 @@ export default function Register() {
 
             {/* reCAPTCHA footer */}
             <div className="text-center mt-3.5 text-xs text-zinc-500 font-medium shrink-0">
-              Protected by reCAPTCHA and subject to the UG Intern Privacy Policy.
+              Protected by reCAPTCHA and subject to the IQ Intern Privacy Policy.
             </div>
 
           </div>

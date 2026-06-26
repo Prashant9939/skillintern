@@ -296,10 +296,10 @@ export default function StudentDashboard() {
           <div style="font-size: 13px; color: #64748b; margin-top: 5px;">Receipt ID: ${receiptNo}</div>
         </td>
         <td class="company-details">
-          <div class="company-name">UG Intern</div>
-          <div>UG Intern Vocational Training Pvt. Ltd.</div>
+          <div class="company-name">IQ Intern</div>
+          <div>IQ Intern Vocational Training Pvt. Ltd.</div>
           <div>Optimark Tech Hub, Sector 62, Noida, UP</div>
-          <div>Email: billing@ugintern.com</div>
+          <div>Email: billing@iqintern.com</div>
           <div>GSTIN: 09AAECS8274M1Z5 (Mock)</div>
         </td>
       </tr>
@@ -342,7 +342,7 @@ export default function StudentDashboard() {
       <tbody>
         <tr>
           <td>
-            <strong>UG Intern Internship Evaluation Assessment Fee</strong><br />
+            <strong>IQ Intern Internship Evaluation Assessment Fee</strong><br />
             <span style="font-size: 11px; color: #64748b;">Track: ${internshipTitle}</span>
           </td>
           <td style="text-align: center;">1</td>
@@ -358,7 +358,7 @@ export default function StudentDashboard() {
 
     <div class="footer">
       <p>This is a computer-generated transaction receipt verified under the Razorpay Payment Gateway API.</p>
-      <p style="margin-top: 5px; font-weight: 500; color: #4f46e5;">Thank you for using UG Intern vocational evaluation services!</p>
+      <p style="margin-top: 5px; font-weight: 500; color: #4f46e5;">Thank you for using IQ Intern vocational evaluation services!</p>
     </div>
 
     <button class="print-btn" onclick="window.print()">Print Receipt</button>
@@ -718,7 +718,7 @@ export default function StudentDashboard() {
               Great Progress, {profile?.full_name || user?.full_name || "Student"}! 🚀
             </h4>
             <p className="text-zinc-500 text-xs mt-1.5 font-light leading-relaxed max-w-xl">
-              You are doing great in your {activeTrackDetails[0]?.trackTitle || "UG Intern"} track. Keep going and complete your next assessment.
+              You are doing great in your {activeTrackDetails[0]?.trackTitle || "IQ Intern"} track. Keep going and complete your next assessment.
             </p>
           </div>
         </div>

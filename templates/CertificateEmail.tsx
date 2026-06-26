@@ -11,7 +11,7 @@ export function getCertificateEmailHtml(fullName: string, internshipTitle: strin
       Your official skill certificate has been verified and generated. You can view, verify, and download it from the certificates section of your portal.
     </p>
     <div style="text-align: center; margin: 30px 0;">
-      <a href="https://ugintern.com/student/certificates" target="_blank" rel="noopener noreferrer" style="background-color: #8B5CF6; color: #FFFFFF; text-decoration: none; padding: 12px 28px; border-radius: 9999px; font-size: 14px; font-weight: 600; display: inline-block;">
+      <a href="https://iqintern.com/student/certificates" target="_blank" rel="noopener noreferrer" style="background-color: #8B5CF6; color: #FFFFFF; text-decoration: none; padding: 12px 28px; border-radius: 9999px; font-size: 14px; font-weight: 600; display: inline-block;">
         Get Certificate
       </a>
     </div>

@@ -124,7 +124,7 @@ export default function PaymentPage() {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_SvZr486cWgXNIQ",
         amount: orderData.amount,
         currency: orderData.currency,
-        name: "UG Intern",
+        name: "IQ Intern",
         description: "One-Time Assessment & Enrollment Fee",
         order_id: orderData.order_id,
         handler: async function (response: any) {
@@ -205,8 +205,8 @@ export default function PaymentPage() {
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem("ugintern_session");
-    document.cookie = "ugintern_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+    sessionStorage.removeItem("iqintern_session");
+    document.cookie = "iqintern_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
     window.location.href = "/auth/login";
   };
 
@@ -261,7 +261,7 @@ export default function PaymentPage() {
 
           <div className="space-y-6">
             <p className="text-zinc-600 text-sm font-light leading-relaxed">
-              Hi <span className="font-bold text-zinc-950">{user?.full_name}</span>! UG Intern requires a one-time evaluation & platform registration fee of <span className="font-bold text-indigo-600">₹{settings.assessment_fee}</span>. Once paid, you will instantly unlock:
+              Hi <span className="font-bold text-zinc-950">{user?.full_name}</span>! IQ Intern requires a one-time evaluation & platform registration fee of <span className="font-bold text-indigo-600">₹{settings.assessment_fee}</span>. Once paid, you will instantly unlock:
             </p>
 
             {/* Benefit Bullets */}
@@ -334,7 +334,7 @@ export default function PaymentPage() {
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
 
       <footer className="py-6 border-t border-zinc-200/60 bg-white text-center text-xs text-zinc-600 font-semibold">
-        <p>© 2026 UG Intern. Secure 256-bit SSL encrypted transaction portal.</p>
+        <p>© 2026 IQ Intern. Secure 256-bit SSL encrypted transaction portal.</p>
       </footer>
     </div>
   );

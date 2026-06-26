@@ -89,7 +89,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const active = sessionStorage.getItem("admin_student_view_active") === "true" || user?.email === "admin@ugintern.com";
+      const active = sessionStorage.getItem("admin_student_view_active") === "true" || user?.email === "admin@iqintern.com";
       setIsAdminImpersonating(active);
     }
   }, [user]);
@@ -137,12 +137,8 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           <Link href={logoHref} className="flex items-center gap-2.5 group">
             <img 
               src="/logo-icon.png" 
-              className="h-8 w-auto object-contain group-hover:scale-105 transition-all" 
+              className="h-9 w-auto object-contain group-hover:scale-105 transition-all" 
             />
-            <div className="text-left">
-              <h1 className="text-zinc-900 text-base font-bold leading-none">UG Intern</h1>
-              <p className="text-[9px] uppercase tracking-widest text-[#64748B] mt-1 font-bold">DASHBOARD</p>
-            </div>
           </Link>
         </div>
 

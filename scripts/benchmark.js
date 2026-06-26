@@ -24,7 +24,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function runBenchmark() {
   console.log("=============================================================");
-  console.log("             UGINTERN PERFORMANCE BENCHMARK               ");
+  console.log("             IQINTERN PERFORMANCE BENCHMARK               ");
   console.log("=============================================================");
   console.log(`Supabase URL: ${supabaseUrl}`);
   console.log("Running synthetic latency tests...\n");

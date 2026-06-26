@@ -125,10 +125,10 @@ export default function AvailableInternships() {
           <div style="font-size: 13px; color: #64748b; margin-top: 5px;">Receipt ID: ${receiptNo}</div>
         </td>
         <td class="company-details">
-          <div class="company-name">UG Intern</div>
-          <div>UG Intern Vocational Training Pvt. Ltd.</div>
+          <div class="company-name">IQ Intern</div>
+          <div>IQ Intern Vocational Training Pvt. Ltd.</div>
           <div>Optimark Tech Hub, Sector 62, Noida, UP</div>
-          <div>Email: billing@ugintern.com</div>
+          <div>Email: billing@iqintern.com</div>
           <div>GSTIN: 09AAECS8274M1Z5 (Mock)</div>
         </td>
       </tr>
@@ -167,7 +167,7 @@ export default function AvailableInternships() {
       <tbody>
         <tr>
           <td>
-            <strong>UG Intern Internship Evaluation Assessment Fee</strong><br />
+            <strong>IQ Intern Internship Evaluation Assessment Fee</strong><br />
             <span style="font-size: 11px; color: #64748b;">Track: ${internshipTitle}</span>
           </td>
           <td style="text-align: center;">1</td>
@@ -183,7 +183,7 @@ export default function AvailableInternships() {
 
     <div class="footer">
       <p>This is a computer-generated transaction receipt verified under the Razorpay Payment Gateway API.</p>
-      <p style="margin-top: 5px; font-weight: 500; color: #4f46e5;">Thank you for using UG Intern vocational evaluation services!</p>
+      <p style="margin-top: 5px; font-weight: 500; color: #4f46e5;">Thank you for using IQ Intern vocational evaluation services!</p>
     </div>
 
     <button class="print-btn" onclick="window.print()">Print Receipt</button>
@@ -221,7 +221,7 @@ export default function AvailableInternships() {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_SvZr486cWgXNIQ",
         amount: orderData.amount,
         currency: orderData.currency,
-        name: "UG Intern",
+        name: "IQ Intern",
         description: `Assessment Fee for ${track.title}`,
         order_id: orderData.order_id,
         handler: async function (response: any) {

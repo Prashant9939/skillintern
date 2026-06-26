@@ -195,8 +195,8 @@ export default function HelpSupportPage() {
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Email Support</p>
-                  <a href="mailto:support@ugintern.com" className="text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-0.5">
-                    support@ugintern.com
+                  <a href="mailto:support@iqintern.com" className="text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-0.5">
+                    support@iqintern.com
                   </a>
                 </div>
               </div>

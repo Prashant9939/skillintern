@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
     // Get user session from cookies
     const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get("ugintern_session")?.value;
+    const sessionCookie = cookieStore.get("iqintern_session")?.value;
     let studentId = "";
 
     if (sessionCookie) {

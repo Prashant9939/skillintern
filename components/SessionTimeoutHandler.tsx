@@ -9,7 +9,7 @@ export default function SessionTimeoutHandler() {
 
     // 10 minutes timeout in milliseconds
     const TIMEOUT_MS = 10 * 60 * 1000;
-    const LAST_ACTIVE_KEY = "ugintern_last_active";
+    const LAST_ACTIVE_KEY = "iqintern_last_active";
 
     // Set initial last active time if not set
     if (!sessionStorage.getItem(LAST_ACTIVE_KEY)) {

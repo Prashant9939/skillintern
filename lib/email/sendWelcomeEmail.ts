@@ -11,7 +11,7 @@ export interface WelcomeEmailOptions {
 export async function sendWelcomeEmail({ email, fullName, userId }: WelcomeEmailOptions) {
   let studentId = userId;
   const templateName = 'WelcomeEmail';
-  const subject = 'Welcome to UG Intern 🚀 | Your Internship Journey Starts Here';
+  const subject = 'Welcome to IQ Intern 🚀 | Your Internship Journey Starts Here';
 
   // 1. Fetch user ID by email if not provided (needed for database logging)
   if (!studentId && isSupabaseConfigured() && supabase) {
@@ -75,7 +75,7 @@ export async function sendWelcomeEmail({ email, fullName, userId }: WelcomeEmail
 
     // 5. Send the Welcome Email
     const info = await transporter.sendMail({
-      from: '"UG Intern Team" <prashantshiwam@gmail.com>',
+      from: '"IQ Intern Team" <prashantshiwam@gmail.com>',
       to: email,
       replyTo: 'prashantshiwam@gmail.com',
       subject,

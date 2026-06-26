@@ -1,5 +1,5 @@
 export const BRANDING = {
-  name: "UG Intern",
+  name: "IQ Intern",
   logoFull: "/logo-full.png",
   logoIcon: "/logo-icon.png",
   favicon: "/logo-icon.png",
@@ -12,16 +12,16 @@ export const BRANDING = {
     textDark: "#1E293B",
   },
   emails: {
-    support: "support@ugintern.com",
-    billing: "billing@ugintern.com",
-    admin: "admin@ugintern.com",
-    fromName: "UG Intern Team",
-    fromEmail: "support@ugintern.com",
+    support: "support@iqintern.com",
+    billing: "billing@iqintern.com",
+    admin: "admin@iqintern.com",
+    fromName: "IQ Intern Team",
+    fromEmail: "support@iqintern.com",
   },
   legal: {
-    companyName: "UG Intern Vocational Training Pvt. Ltd.",
+    companyName: "IQ Intern Vocational Training Pvt. Ltd.",
   },
-  domain: "ugintern.com",
-  websiteUrl: "https://ugintern.com",
+  domain: "iqintern.com",
+  websiteUrl: "https://iqintern.com",
 };
 export default BRANDING;

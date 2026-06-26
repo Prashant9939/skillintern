@@ -24,7 +24,7 @@ export async function sendEmail({ to, subject, html, studentId }: EmailOptions) 
     });
 
     const info = await transporter.sendMail({
-      from: '"UG Intern Support" <prashantshiwam@gmail.com>',
+      from: '"IQ Intern Support" <prashantshiwam@gmail.com>',
       to,
       subject,
       html,

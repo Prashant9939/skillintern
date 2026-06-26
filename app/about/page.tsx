@@ -10,8 +10,8 @@ import Footer from "@/components/Footer";
 import { Compass, Eye, ShieldCheck } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "About Us | UG Intern",
-  description: "Learn more about UG Intern's mission to bridge the gap between academic education and industry readiness.",
+  title: "About Us | IQ Intern",
+  description: "Learn more about IQ Intern's mission to bridge the gap between academic education and industry readiness.",
 };
 
 export default function About() {
@@ -54,7 +54,7 @@ export default function About() {
             Bridging Academics & Industry
           </h1>
           <p className="mt-4 text-zinc-600 text-lg font-light">
-            UG Intern was founded to provide a clear, standardized, and secure validation platform for internships.
+            IQ Intern was founded to provide a clear, standardized, and secure validation platform for internships.
           </p>
         </div>
 

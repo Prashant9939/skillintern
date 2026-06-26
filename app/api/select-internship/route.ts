@@ -64,13 +64,13 @@ export async function POST(req: Request) {
           </ul>
           <p>You can now start your assessment.</p>
           <br>
-          <p>Regards,<br>UG Intern Team</p>
+          <p>Regards,<br>IQ Intern Team</p>
         `;
         
         // This runs asynchronously in background
         sendEmail({
           to: profile.email,
-          subject: "UG Intern Registration Confirmation",
+          subject: "IQ Intern Registration Confirmation",
           html: emailHtml,
           studentId: studentId
         }).catch(console.error);
@@ -89,11 +89,11 @@ export async function POST(req: Request) {
         </ul>
         <p>You can now start your assessment.</p>
         <br>
-        <p>Regards,<br>UG Intern Team</p>
+        <p>Regards,<br>IQ Intern Team</p>
       `;
       sendEmail({
         to: "test@example.com", // Mock email
-        subject: "UG Intern Registration Confirmation",
+        subject: "IQ Intern Registration Confirmation",
         html: emailHtml,
         studentId: studentId
       }).catch(console.error);

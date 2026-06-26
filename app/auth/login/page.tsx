@@ -27,9 +27,9 @@ export default function Login() {
   const handleClearMockData = () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("mock_profiles");
-      localStorage.removeItem("ugintern_session");
-      sessionStorage.removeItem("ugintern_session");
-      document.cookie = "ugintern_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+      localStorage.removeItem("iqintern_session");
+      sessionStorage.removeItem("iqintern_session");
+      document.cookie = "iqintern_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
       alert("Local mock database cleared successfully! Reloading page...");
       window.location.reload();
     }
@@ -144,7 +144,7 @@ export default function Login() {
               <div className="text-left">
                 <div className="text-[9px] font-bold text-indigo-200 uppercase tracking-wider">Verified Offer</div>
                 <div className="text-[11px] font-extrabold text-white flex items-center gap-1">
-                  <span>UG Intern Ltd.</span>
+                  <span>IQ Intern Ltd.</span>
                   <span className="text-[8px] text-emerald-300 font-bold px-1.5 py-0.5 bg-emerald-500/20 rounded-full">Active</span>
                 </div>
               </div>
@@ -224,7 +224,7 @@ export default function Login() {
 
         {/* Desktop Header */}
         <div className="hidden md:flex justify-end p-4 shrink-0">
-           <span className="text-xs font-medium text-zinc-500 mr-2">New to UG Intern?</span>
+           <span className="text-xs font-medium text-zinc-500 mr-2">New to IQ Intern?</span>
            <Link href="/auth/register" className="text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
              Create an Account here →
            </Link>
@@ -346,7 +346,7 @@ export default function Login() {
 
               {/* Mobile Footer Link */}
               <div className="mt-5 pt-4 border-t border-zinc-100 text-center text-xs md:hidden shrink-0">
-                <span className="text-zinc-500 font-medium">New to UG Intern? </span>
+                <span className="text-zinc-500 font-medium">New to IQ Intern? </span>
                 <Link href="/auth/register" className="text-indigo-600 hover:text-indigo-750 font-bold transition-colors">
                   Create an Account
                 </Link>

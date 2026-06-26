@@ -98,12 +98,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href={logoHref} className="flex items-center gap-2.5 group">
             <img 
               src="/logo-icon.png" 
-              className="h-8 w-auto object-contain group-hover:scale-105 transition-all" 
+              className="h-9 w-auto object-contain group-hover:scale-105 transition-all" 
             />
-            <div className="text-left">
-              <h1 className="text-zinc-900 text-base font-bold leading-none">AdminHub</h1>
-              <p className="text-[9px] uppercase tracking-widest text-[#64748B] mt-1 font-bold">ADMIN PANEL</p>
-            </div>
           </Link>
         </div>
 
@@ -162,7 +158,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             src="/logo-icon.png" 
             className="h-10 w-auto object-contain" 
           />
-          <span className="text-base font-semibold">Admin<span className="text-[#5B5FF7] font-extrabold">Hub</span></span>
         </Link>
         <button
           onClick={() => setMobileMenuOpen(true)}
@@ -193,7 +188,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               src="/logo-icon.png" 
               className="h-9 w-auto object-contain" 
             />
-            <span>Admin<span className="text-[#5B5FF7] font-extrabold">Hub</span></span>
           </Link>
           <button
             onClick={() => setMobileMenuOpen(false)}

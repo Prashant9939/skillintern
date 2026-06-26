@@ -51,7 +51,7 @@ export default function Contact() {
               </div>
               <div>
                 <h4 className="text-sm font-bold text-zinc-900 mb-1">Email Support</h4>
-                <p className="text-xs text-zinc-500 hover:text-indigo-600 transition-colors">support@ugintern.com</p>
+                <p className="text-xs text-zinc-500 hover:text-indigo-600 transition-colors">support@iqintern.com</p>
               </div>
             </div>
 

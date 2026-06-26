@@ -78,7 +78,7 @@ th {
 
 const sharedHeader = `
 <div class="shared-header" style="text-align: center; margin-bottom: 20px; border-bottom: 1px solid #E2E8F0; padding-bottom: 15px;">
-  <div style="font-size: 26px; font-weight: 900; color: #4F46E5; letter-spacing: -0.5px;">UG Intern</div>
+  <div style="font-size: 26px; font-weight: 900; color: #4F46E5; letter-spacing: -0.5px;">IQ Intern</div>
   <div style="font-size: 11px; color: #7C3AED; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 3px;">Vocational Skill Development Partner</div>
 </div>
 `;
@@ -86,7 +86,7 @@ const sharedHeader = `
 const sharedFooter = `
 <div class="shared-footer" style="text-align: center; margin-top: 40px; border-top: 1px solid #E2E8F0; padding-top: 20px; font-size: 11px; color: #94A3B8;">
   <p>Need help? Contact us: <strong>prashantshiwam@gmail.com</strong></p>
-  <p>© UG Intern | Empowering Students, Shaping Future</p>
+  <p>© IQ Intern | Empowering Students, Shaping Future</p>
 </div>
 `;
 
@@ -123,7 +123,7 @@ const createTemplatesForSlug = (slug, name, reportChapters) => {
       <p style="margin-top: 20px;">Your internship duties will focus on real-world projects, mentor instruction, and active validation checkpoints. Upon successful completion of all checkpoints, you will receive your verified skill credentials and project certificate.</p>
       
       <p style="margin-top: 20px;">Welcome to the program!</p>
-      <p style="margin-top: 30px;">Best regards,<br/><strong>UG Intern Team</strong></p>
+      <p style="margin-top: 30px;">Best regards,<br/><strong>IQ Intern Team</strong></p>
     </div>
     {{footer}}
   </div>
@@ -242,7 +242,7 @@ const createTemplatesForSlug = (slug, name, reportChapters) => {
       <p>This is to confirm that you have successfully completed your vocational training program on <strong>{{internshipName}}</strong> with <strong>{{companyName}}</strong>.</p>
       <p>Your program began on <strong>{{startDate}}</strong> and concluded on <strong>{{endDate}}</strong>, during which you dedicated a minimum of 120 Hours to training modules, quizzes, and project evaluations.</p>
       <p>We commend your performance, active participation, and technical skills shown during the evaluation checkpoints. We wish you the absolute best in all your future academic and professional endeavors.</p>
-      <p style="margin-top: 30px;">Sincerely,<br/><strong>UG Intern Coordinator</strong></p>
+      <p style="margin-top: 30px;">Sincerely,<br/><strong>IQ Intern Coordinator</strong></p>
     </div>
     {{footer}}
   </div>
@@ -273,7 +273,7 @@ const createTemplatesForSlug = (slug, name, reportChapters) => {
       <div style="font-size: 13px; color: #10B981; font-weight: bold; margin-top: 4px;">Assessment Result: PASSED</div>
     </div>
 
-    <p style="font-size: 13px; color: #64748B; text-align: center;">This marksheet details the candidate's core competency score on the UG Intern MCQ Assessment Engine.</p>
+    <p style="font-size: 13px; color: #64748B; text-align: center;">This marksheet details the candidate's core competency score on the IQ Intern MCQ Assessment Engine.</p>
     {{footer}}
   </div>
 </body>

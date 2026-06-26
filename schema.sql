@@ -89,20 +89,20 @@ create policy "Allow public access" on public.test_results for all using (true) 
 
 -- ============================================================
 -- DEFAULT ADMIN ACCOUNT SEED
--- Email   : admin@ugintern.com
+-- Email   : admin@iqintern.com
 -- Password: Shiwam@99
--- Hash    : SHA-256("Shiwam@99" + "ugintern-secure-salt-2026")
+-- Hash    : SHA-256("Shiwam@99" + "iqintern-secure-salt-2026")
 -- ============================================================
 -- Run this in Supabase SQL Editor after creating the tables above.
 -- Uses DO $$ ... END $$ so the INSERT is skipped if the admin already exists.
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM public.profiles WHERE email = 'admin@ugintern.com'
+    SELECT 1 FROM public.profiles WHERE email = 'admin@iqintern.com'
   ) THEN
     INSERT INTO public.profiles (email, password_hash, full_name, phone_number, department_stream, role)
     VALUES (
-      'admin@ugintern.com',
+      'admin@iqintern.com',
       '276b24287f4e0c697926eb8a513c867775eda1c727332a6ea725316872c9fbb7',
       'Super Admin',
       '0000000000',

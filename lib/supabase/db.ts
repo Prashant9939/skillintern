@@ -1625,7 +1625,7 @@ function getFallbackTemplateHtml(code: string, name: string): string {
     <div class="footer">
       <div>Date: {{COMPLETION_DATE}}</div>
       <div>Verification ID: {{VERIFICATION_ID}}</div>
-      <div>UG Intern Coordinator</div>
+      <div>IQ Intern Coordinator</div>
     </div>
     <button class="print-btn" onclick="window.print()">Print Certificate</button>
   </div>
@@ -1666,7 +1666,7 @@ function getFallbackTemplateHtml(code: string, name: string): string {
       <div style="font-size: 14px; font-weight: bold; color: #475569; margin-top: 8px;">Final Grade: {{GRADE}}</div>
       <div style="font-size: 12px; color: #059669; font-weight: bold; margin-top: 4px;">Assessment Result: PASSED</div>
     </div>
-    <p style="font-size: 13px; text-align: center; color: #64748b;">This marksheet details the candidate's core competency score on the UG Intern MCQ Assessment Engine.</p>
+    <p style="font-size: 13px; text-align: center; color: #64748b;">This marksheet details the candidate's core competency score on the IQ Intern MCQ Assessment Engine.</p>
     <button class="print-btn" onclick="window.print()">Print Marksheet</button>
   </div>
 </body>
@@ -1754,7 +1754,7 @@ function getFallbackTemplateHtml(code: string, name: string): string {
       <div><strong>Department/Stream:</strong> {{DEPARTMENT}}</div>
     </div>
     <div class="content">
-      <p>I hereby express my consent to participate in the UG Intern Vocational Training and Internship program. I agree to abide by the guidelines, schedules, and code of conduct set forth by the platform and the project coordinators.</p>
+      <p>I hereby express my consent to participate in the IQ Intern Vocational Training and Internship program. I agree to abide by the guidelines, schedules, and code of conduct set forth by the platform and the project coordinators.</p>
       <p>I confirm that the details provided in my candidate profile are accurate. I understand that my certification is subject to completing the requirements and achieving a passing grade of 40% or above in the assessment portal.</p>
       <p style="margin-top: 16px;">Date: ________________________</p>
     </div>

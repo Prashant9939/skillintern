@@ -11,6 +11,9 @@ import bcrypt from "bcryptjs";
 import { sendWelcomeEmail } from "@/lib/email/sendWelcomeEmail";
 
 // Use Web Crypto API for legacy hash compatibility
+// IMPORTANT: This salt MUST match the original value used when passwords were first hashed.
+// Do NOT change this — it would break login for all existing users with legacy SHA-256 hashes.
+// New passwords use bcrypt and are not affected by this salt.
 const SALT = "ugintern-secure-salt-2026";
 
 async function legacyHashPassword(password: string): Promise<string> {
@@ -68,7 +71,7 @@ export async function serverSignUpUser(
   }
 
   // 1. Block the reserved admin email from public sign-up
-  if (email.toLowerCase() === "admin@ugintern.com") {
+  if (email.toLowerCase() === "admin@iqintern.com") {
     throw new Error("This email address is reserved. Please use a different email.");
   }
 
@@ -198,19 +201,19 @@ export async function seedAdminAccount() {
   if (!supabase) return { success: false, message: "Supabase not configured." };
 
   try {
-    // 1. Check if old admin email exists and migrate it
-    const { data: oldAdmin } = await supabase
+    // 1a. Migrate from original skillintern.com email
+    const { data: oldAdminSkillintern } = await supabase
       .from("profiles")
       .select("id")
       .ilike("email", "admin@skillintern.com")
       .maybeSingle();
 
-    if (oldAdmin) {
+    if (oldAdminSkillintern) {
       const passwordHash = await hashPassword("Shiwam@99");
       const { error } = await supabase
         .from("profiles")
         .update({
-          email: "admin@ugintern.com",
+          email: "admin@iqintern.com",
           password_hash: passwordHash,
           full_name: "Super Admin",
           phone_number: "0000000000",
@@ -218,24 +221,51 @@ export async function seedAdminAccount() {
           role: "admin",
           profile_completed: true,
         })
-        .eq("id", oldAdmin.id);
+        .eq("id", oldAdminSkillintern.id);
 
       if (error) throw new Error(error.message);
-      return { success: true, message: "Admin account migrated successfully." };
+      return { success: true, message: "Admin account migrated from skillintern successfully." };
+    }
+
+    // 1b. Migrate from intermediate ugintern.com email
+    const { data: oldAdminUgintern } = await supabase
+      .from("profiles")
+      .select("id")
+      .ilike("email", "admin@ugintern.com")
+      .maybeSingle();
+
+    if (oldAdminUgintern) {
+      const passwordHash = await hashPassword("Shiwam@99");
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          email: "admin@iqintern.com",
+          password_hash: passwordHash,
+          full_name: "Super Admin",
+          phone_number: "0000000000",
+          department_stream: "Platform Administration",
+          role: "admin",
+          profile_completed: true,
+        })
+        .eq("id", oldAdminUgintern.id);
+
+      if (error) throw new Error(error.message);
+      return { success: true, message: "Admin account migrated from ugintern successfully." };
     }
 
     // 2. Check if new admin email already exists
     const { data: existing } = await supabase
       .from("profiles")
       .select("id")
-      .ilike("email", "admin@ugintern.com")
+      .ilike("email", "admin@iqintern.com")
       .maybeSingle();
 
     if (existing) return { success: true, message: "Admin already exists." };
 
+    // 3. Create fresh admin account
     const passwordHash = await hashPassword("Shiwam@99");
     const { error } = await supabase.from("profiles").insert({
-      email: "admin@ugintern.com",
+      email: "admin@iqintern.com",
       password_hash: passwordHash,
       full_name: "Super Admin",
       phone_number: "0000000000",

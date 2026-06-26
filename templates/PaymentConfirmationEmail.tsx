@@ -26,7 +26,7 @@ export function getPaymentConfirmationEmailHtml(fullName: string, amount: number
       </table>
     </div>
     <div style="text-align: center; margin: 30px 0;">
-      <a href="https://ugintern.com/student/payment" target="_blank" rel="noopener noreferrer" style="background-color: #4F46E5; color: #FFFFFF; text-decoration: none; padding: 12px 28px; border-radius: 9999px; font-size: 14px; font-weight: 600; display: inline-block;">
+      <a href="https://iqintern.com/student/payment" target="_blank" rel="noopener noreferrer" style="background-color: #4F46E5; color: #FFFFFF; text-decoration: none; padding: 12px 28px; border-radius: 9999px; font-size: 14px; font-weight: 600; display: inline-block;">
         View Payment Details
       </a>
     </div>

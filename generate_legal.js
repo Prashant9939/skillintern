@@ -72,7 +72,7 @@ export default function \${title.replace(/[^a-zA-Z]/g, '')}() {
             <p className="mt-2 text-sm text-zinc-500 font-medium">Last Updated: October 25, 2026</p>
           </div>
           <div className="text-sm font-medium text-indigo-600 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-100">
-            UG Intern Legal
+            IQ Intern Legal
           </div>
         </div>
       </div>
