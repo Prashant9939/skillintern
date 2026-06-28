@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Block private/authenticated routes from indexing
+Disallow: /admin/
+Disallow: /student/
+Disallow: /auth/
+Disallow: /api/
+
+# Sitemap locations
+Sitemap: https://iqintern.com/sitemap.xml
+Sitemap: https://iqintern.com/sitemap_index.xml
