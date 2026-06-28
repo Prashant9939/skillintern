@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     shortcut: BRANDING.logoIcon,
     apple: BRANDING.logoIcon,
   },
+  verification: {
+    google: "TZ6-qTsG5N28OpBI5m0m10TbW48IrPgU1N6Icy8Nxzc",
+  },
 };
 
 export default function RootLayout({
