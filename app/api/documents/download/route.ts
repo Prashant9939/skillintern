@@ -12,6 +12,7 @@ export async function GET(req: Request) {
     const templateType = searchParams.get('templateType');
     const studentId = searchParams.get('studentId');
     const internshipId = searchParams.get('internshipId');
+    const bypassCache = searchParams.get('bypassCache') === 'true' || searchParams.get('force') === 'true';
 
     if (!templateType || !studentId || !internshipId) {
       return NextResponse.json({ success: false, error: 'Missing required parameters' }, { status: 400 });
@@ -217,7 +218,7 @@ export async function GET(req: Request) {
     let fromCache = false;
 
     // Check if PDF cache already exists
-    if (fs.existsSync(pdfCacheFilePath)) {
+    if (!bypassCache && fs.existsSync(pdfCacheFilePath)) {
       try {
         pdfBuffer = fs.readFileSync(pdfCacheFilePath);
         fromCache = true;
@@ -230,7 +231,7 @@ export async function GET(req: Request) {
       let finalHtml = '';
       
       // Try to read from HTML cache first
-      if (fs.existsSync(htmlCacheFilePath)) {
+      if (!bypassCache && fs.existsSync(htmlCacheFilePath)) {
         try {
           finalHtml = fs.readFileSync(htmlCacheFilePath, 'utf-8');
         } catch (htmlReadError) {

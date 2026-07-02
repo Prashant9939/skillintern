@@ -1647,7 +1647,7 @@ async function seedDefaultTemplatesFromFiles(): Promise<DocumentTemplate[]> {
         
         if (!html) {
           try {
-            const res = await fetch(`/templates/default/${fileName}`);
+            const res = await fetch(`/templates/default/${fileName}?t=${Date.now()}`, { cache: 'no-store' });
             if (res.ok) {
               html = await res.text();
             } else {

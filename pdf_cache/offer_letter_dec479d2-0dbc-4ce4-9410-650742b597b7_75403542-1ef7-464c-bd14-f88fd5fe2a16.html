@@ -7,7 +7,7 @@
   <title>Internship Offer Letter - IQ Intern</title>
   <style>
     :root {
-      --primary: #4f46e5;
+      /* --primary: #4f46e5; */
       --primary-light: #e0e7ff;
       --text-dark: #1e293b;
       --text-body: #334155;
@@ -36,11 +36,26 @@
 
     .header {
       background: linear-gradient(135deg, var(--primary) 0%, #3730a3 100%);
-      color: white;
-      padding: 40px 50px;
+      color: #181818;
+      padding: 22px 40px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin: 0;
+    }
+
+    .header-divider {
+      width: 100%;
+      height: 2px;
+      background: #d9e2ef;
+      margin: 0;
+    }
+
+    .signature-line {
+      width: 180px;
+      height: 55px;
+      border-bottom: 2px solid #333;
+      margin: 25px auto 12px;
     }
 
     .brand h1 {
@@ -62,6 +77,13 @@
       font-size: 13px;
       opacity: 0.95;
     }
+
+    /* .sig-line {
+    border-bottom: 2px solid var(--text-dark);
+    width: 80%;
+    margin: 8px auto 8px;
+    height: 0;
+} */
 
     .header-meta strong {
       display: block;
@@ -347,153 +369,158 @@ th {
   <div class="letter-container">
     <div class="header">
       <div class="brand">
-        <h1>IQ Intern</h1>
+        <img src="/logo-full.png" alt="" height="65px"
+          width="180px">
         <p>Vocational Training Platform</p>
       </div>
+
       <div class="header-meta">
         <strong>Offer Letter</strong>
-        Date: July 2, 2026<br />
+        Date: July 2, 2026<br>
         Ref: SI-MOCK-ID
       </div>
     </div>
 
+    <div class="header-divider"></div>
+
     <div class="content">
-      <div class="letter-title">Internship Offer Letter</div>
 
-      <div class="salutation">Dear Shiwam Mishra,</div>
+      <div class="content">
+        <div class="letter-title">Internship Offer Letter</div>
 
-      <div class="intro-text">
-        Congratulations! We are delighted to offer you the position of <strong>Digital Marketing Intern</strong> on the
-        IQ Intern platform. This offer is a testament to your academic credentials and potential. We believe this
-        internship will provide you with invaluable practical experience and professional development.
+        <div class="salutation">Dear Shiwam Mishra,</div>
+
+        <div class="intro-text">
+          Congratulations! We are delighted to offer you the position of <strong>Digital Marketing Intern</strong> on
+          the IQ Intern platform. We are pleased to recognize that you are currently pursuing
+          <strong>CSE</strong> (Semester <strong>8th Semester</strong>) at <strong>Sri Tridandi Dev Degree College Gautamnagar</strong>,
+          affiliated with <strong>Veer Kunwar Singh University (VKSU)</strong>. This offer is a testament to your academic achievements,
+          dedication, and potential. We believe this internship will provide you with invaluable practical experience,
+          industry exposure, expert mentorship, and hands-on learning opportunities that will strengthen your technical
+          and professional skills. We look forward to your active participation and wish you a successful, rewarding,
+          and enriching internship journey with IQ Intern.
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-label">Internship Track</div>
+            <div class="info-value">Digital Marketing</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Duration</div>
+            <div class="info-value">120 Hrs (Self-Paced)</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Start Date</div>
+            <div class="info-value">June 29, 2026</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">End Date</div>
+            <div class="info-value">July 27, 2026</div>
+          </div>
+        </div>
+
+
+
+        <div class="terms-section">
+          <div class="section-title">Stipend & Financial Terms</div>
+          <ul class="terms-list">
+            <li><strong>Nature of Internship:</strong> This is a <strong></strong> internship. {{#if
+              isUnpaid}} As per prevalent practices for training-focused programs, this internship does not carry a
+              monetary stipend. The primary compensation is the learning experience, mentorship, and digital credential
+              earned upon successful completion.</li>
+            <li><strong>Expenses:</strong> You are responsible for all costs associated with this internship, including
+              but not limited to internet connectivity, computing resources, and any software/licenses required beyond
+              what is provided by the platform.</li>
+            <li><strong>Insurance:</strong> You are solely responsible for maintaining adequate health and accident
+              insurance coverage for the entire duration of the internship. IQ Intern shall not be liable for any
+              medical
+              or emergency expenses.</li>
+          </ul>
+        </div>
+
+        <div class="terms-section">
+          <div class="section-title">Credentials & Completion</div>
+          <ul class="terms-list">
+            <li><strong>Evaluation:</strong> Successful completion requires scoring above the defined passing threshold
+              in
+              all proctored assessments and project submissions.</li>
+            <li><strong>Digital Credential:</strong> Upon meeting all requirements, you will be issued a verified
+              digital
+              credential/certificate, which will be permanently linked to your profile for verification by future
+              employers or academic institutions.</li>
+            <li><strong>Report:</strong> You may be required to submit a brief internship report or feedback survey upon
+              completion, which helps us improve the program for future interns.</li>
+          </ul>
+        </div>
+
+        <div class="terms-section">
+          <div class="section-title">General Terms & Conditions</div>
+          <ul class="terms-list">
+            <li><strong>Non-Employment Relationship:</strong> This internship does not create an employer-employee
+              relationship between you and IQ Intern or its affiliates. You are engaged as a trainee for educational
+              purposes .</li>
+            <li><strong>Termination:</strong> Either party may terminate this engagement at any time by providing
+              written
+              notice. IQ Intern reserves the right to terminate the internship for violation of these terms, academic
+              dishonesty, or unsatisfactory performance.</li>
+            <li><strong>Intellectual Property:</strong> All work created during the internship, unless otherwise agreed
+              in
+              writing, shall be the property of IQ Intern or the respective project owner. You grant IQ Intern a
+              non-exclusive license to use any work you submit for evaluation and platform improvement purposes.</li>
+            <li><strong>Liability:</strong> To the fullest extent permitted by law, IQ Intern, its directors, employees,
+              and affiliates shall not be liable for any indirect, incidental, or consequential damages arising out of
+              your participation in this program.</li>
+            <li><strong>Governing Law:</strong> These terms shall be governed by and construed in accordance with the
+              laws
+              of India, and you submit to the exclusive jurisdiction of the courts in .</li>
+            <li><strong>Modifications:</strong> IQ Intern reserves the right to modify these terms and conditions at any
+              time. Continued participation after such changes constitutes your acceptance of the new terms.</li>
+          </ul>
+        </div>
+
+        <div class="acceptance-section">
+          <div class="acceptance-title">Acceptance of Offer</div>
+          <div class="acceptance-text">
+            By signing below or by clicking the "Accept Offer" button on the IQ Intern platform, you acknowledge that
+            you
+            have read, understood, and agree to be bound by all the terms and conditions outlined in this letter. You
+            confirm that the information you provided during application is true and accurate.
+          </div>
+          <div style="text-align: center; font-size: 13px; color: #78350f; margin-top: 10px;">
+            <strong>Acceptance Deadline:</strong> Please confirm your acceptance by
+            <strong></strong>.
+          </div>
+        </div>
+
+        <div class="signature-grid">
+          <div class="sig-block">
+            <div class="signature-line">Intern's Signature</div>
+            <div class="sig-line"></div>
+            <div class="sig-sublabel">Shiwam Mishra</div>
+            <div class="sig-sublabel">Date: _______________</div>
+          </div>
+          <div class="sig-block">
+            <div class="sig-label">Authorized Signatory</div>
+            <div><img src="/stamp.png" height="100px" width="100px"></div>
+
+            <div class="sig-sublabel">For IQ Intern Vocational Training Pvt. Ltd.</div>
+            <div class="sig-sublabel">Date: July 2, 2026</div>
+          </div>
+        </div>
+
+        <div style="text-align: center;">
+          <span class="verification-badge">✓ Digitally Verifiable</span>
+        </div>
       </div>
 
-      <div class="info-grid">
-        <div class="info-card">
-          <div class="info-label">Internship Track</div>
-          <div class="info-value">Digital Marketing</div>
-        </div>
-        <div class="info-card">
-          <div class="info-label">Duration</div>
-          <div class="info-value">120 Hrs (Self-Paced)</div>
-        </div>
-        <div class="info-card">
-          <div class="info-label">Start Date</div>
-          <div class="info-value">June 29, 2026</div>
-        </div>
-        <div class="info-card">
-          <div class="info-label">End Date</div>
-          <div class="info-value">July 27, 2026</div>
-        </div>
-      </div>
-
-      <div class="terms-section">
-        <div class="section-title">Program Overview & Expectations</div>
-        <ul class="terms-list">
-          <li><strong>Structured Learning:</strong> You will engage with comprehensive syllabus materials, complete
-            real-world projects, and participate in proctored evaluations designed to simulate professional tasks
-            【turn0search0】.</li>
-          <li><strong>Supervision & Mentorship:</strong> You will be assigned a mentor/supervisor who will guide your
-            learning journey, provide feedback, and assess your progress.</li>
-          <li><strong>Confidentiality:</strong> You agree to maintain strict confidentiality regarding all proprietary
-            information, project details, and data accessed during the internship. Unauthorized disclosure is prohibited
-            【turn0search0】【turn0search10】.</li>
-          <li><strong>Professional Conduct:</strong> You are expected to uphold the highest standards of
-            professionalism, integrity, and respect in all interactions within the IQ Intern community.</li>
-        </ul>
-      </div>
-
-      <div class="terms-section">
-        <div class="section-title">Stipend & Financial Terms</div>
-        <ul class="terms-list">
-          <li><strong>Nature of Internship:</strong> This is a <strong></strong> internship. {{#if
-            isUnpaid}} As per prevalent practices for training-focused programs, this internship does not carry a
-            monetary stipend. The primary compensation is the learning experience, mentorship, and digital credential
-            earned upon successful completion 【turn0search0】【turn0search15】. {{/if}}</li>
-          <li><strong>Expenses:</strong> You are responsible for all costs associated with this internship, including
-            but not limited to internet connectivity, computing resources, and any software/licenses required beyond
-            what is provided by the platform.</li>
-          <li><strong>Insurance:</strong> You are solely responsible for maintaining adequate health and accident
-            insurance coverage for the entire duration of the internship. IQ Intern shall not be liable for any medical
-            or emergency expenses 【turn0search0】.</li>
-        </ul>
-      </div>
-
-      <div class="terms-section">
-        <div class="section-title">Credentials & Completion</div>
-        <ul class="terms-list">
-          <li><strong>Evaluation:</strong> Successful completion requires scoring above the defined passing threshold in
-            all proctored assessments and project submissions.</li>
-          <li><strong>Digital Credential:</strong> Upon meeting all requirements, you will be issued a verified digital
-            credential/certificate, which will be permanently linked to your profile for verification by future
-            employers or academic institutions.</li>
-          <li><strong>Report:</strong> You may be required to submit a brief internship report or feedback survey upon
-            completion, which helps us improve the program for future interns 【turn0search0】.</li>
-        </ul>
-      </div>
-
-      <div class="terms-section">
-        <div class="section-title">General Terms & Conditions</div>
-        <ul class="terms-list">
-          <li><strong>Non-Employment Relationship:</strong> This internship does not create an employer-employee
-            relationship between you and IQ Intern or its affiliates. You are engaged as a trainee for educational
-            purposes 【turn0search10】【turn0search12】.</li>
-          <li><strong>Termination:</strong> Either party may terminate this engagement at any time by providing written
-            notice. IQ Intern reserves the right to terminate the internship for violation of these terms, academic
-            dishonesty, or unsatisfactory performance.</li>
-          <li><strong>Intellectual Property:</strong> All work created during the internship, unless otherwise agreed in
-            writing, shall be the property of IQ Intern or the respective project owner. You grant IQ Intern a
-            non-exclusive license to use any work you submit for evaluation and platform improvement purposes.</li>
-          <li><strong>Liability:</strong> To the fullest extent permitted by law, IQ Intern, its directors, employees,
-            and affiliates shall not be liable for any indirect, incidental, or consequential damages arising out of
-            your participation in this program.</li>
-          <li><strong>Governing Law:</strong> These terms shall be governed by and construed in accordance with the laws
-            of India, and you submit to the exclusive jurisdiction of the courts in .</li>
-          <li><strong>Modifications:</strong> IQ Intern reserves the right to modify these terms and conditions at any
-            time. Continued participation after such changes constitutes your acceptance of the new terms.</li>
-        </ul>
-      </div>
-
-      <div class="acceptance-section">
-        <div class="acceptance-title">Acceptance of Offer</div>
-        <div class="acceptance-text">
-          By signing below or by clicking the "Accept Offer" button on the IQ Intern platform, you acknowledge that you
-          have read, understood, and agree to be bound by all the terms and conditions outlined in this letter. You
-          confirm that the information you provided during application is true and accurate.
-        </div>
-        <div style="text-align: center; font-size: 13px; color: #78350f; margin-top: 10px;">
-          <strong>Acceptance Deadline:</strong> Please confirm your acceptance by
-          <strong></strong>.
-        </div>
-      </div>
-
-      <div class="signature-grid">
-        <div class="sig-block">
-          <div class="sig-label">Intern's Signature</div>
-          <div class="sig-line"></div>
-          <div class="sig-sublabel">Shiwam Mishra</div>
-          <div class="sig-sublabel">Date: _______________</div>
-        </div>
-        <div class="sig-block">
-          <div class="sig-label">Authorized Signatory</div>
-          <div class="sig-line"></div>
-          <div class="sig-sublabel">For IQ Intern Vocational Training Pvt. Ltd.</div>
-          <div class="sig-sublabel">Date: July 2, 2026</div>
-        </div>
-      </div>
-
-      <div style="text-align: center;">
-        <span class="verification-badge">✓ Digitally Verifiable</span>
+      <div class="footer">
+        This document is computer-generated and does not require a physical signature. Its authenticity can be verified
+        online at <a href="https://iqintern.in/verify">iqintern.in/verify</a> using the Reference ID:
+        <strong>SI-MOCK-ID</strong>.<br />
+        ©  IQ Intern Vocational Training Pvt. Ltd. All rights reserved.
       </div>
     </div>
-
-    <div class="footer">
-      This document is computer-generated and does not require a physical signature. Its authenticity can be verified
-      online at <a href="https://iqintern.in/verify">iqintern.in/verify</a> using the Reference ID:
-      <strong>SI-MOCK-ID</strong>.<br />
-      ©  IQ Intern Vocational Training Pvt. Ltd. All rights reserved.
-    </div>
-  </div>
 </body>
 
 </html>
