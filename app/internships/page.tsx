@@ -8,6 +8,74 @@ import { getCurrentUser, UserSession } from "@/lib/supabase/auth";
 import { Search, Briefcase, Clock, Tag, ArrowUpRight, HelpCircle } from "lucide-react";
 import Link from "next/link";
 
+const getTrackTheme = (trackId: string) => {
+  const cleanId = trackId.toLowerCase();
+  if (cleanId.includes("web-dev") || cleanId.includes("webdev")) {
+    return {
+      borderClass: "border-l-emerald-550",
+      badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      btnClass: "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm hover:shadow-md shadow-emerald-600/10",
+      icon: "🌐"
+    };
+  } else if (cleanId.includes("frontend")) {
+    return {
+      borderClass: "border-l-sky-500",
+      badgeClass: "bg-sky-50 text-sky-700 border-sky-200",
+      btnClass: "bg-sky-600 hover:bg-sky-700 text-white shadow-sm hover:shadow-md shadow-sky-600/10",
+      icon: "🎨"
+    };
+  } else if (cleanId.includes("python")) {
+    return {
+      borderClass: "border-l-indigo-500",
+      badgeClass: "bg-indigo-50 text-indigo-700 border-indigo-200",
+      btnClass: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-md shadow-indigo-600/10",
+      icon: "🐍"
+    };
+  } else if (cleanId.includes("data") || cleanId.includes("analytics") || cleanId.includes("datasci")) {
+    return {
+      borderClass: "border-l-amber-500",
+      badgeClass: "bg-amber-50 text-amber-700 border-amber-200",
+      btnClass: "bg-amber-600 hover:bg-amber-700 text-white shadow-sm hover:shadow-md shadow-amber-600/10",
+      icon: "📊"
+    };
+  } else if (cleanId.includes("ai") || cleanId.includes("ml") || cleanId.includes("artificial")) {
+    return {
+      borderClass: "border-l-violet-500",
+      badgeClass: "bg-violet-50 text-violet-700 border-violet-200",
+      btnClass: "bg-violet-600 hover:bg-violet-700 text-white shadow-sm hover:shadow-md shadow-violet-600/10",
+      icon: "🤖"
+    };
+  } else if (cleanId.includes("cyber") || cleanId.includes("security")) {
+    return {
+      borderClass: "border-l-red-500",
+      badgeClass: "bg-red-50 text-red-700 border-red-205",
+      btnClass: "bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow-md shadow-red-600/10",
+      icon: "🔒"
+    };
+  } else if (cleanId.includes("cloud")) {
+    return {
+      borderClass: "border-l-cyan-500",
+      badgeClass: "bg-cyan-50 text-cyan-700 border-cyan-205",
+      btnClass: "bg-cyan-600 hover:bg-cyan-700 text-white shadow-sm hover:shadow-md shadow-cyan-600/10",
+      icon: "☁️"
+    };
+  } else if (cleanId.includes("hr")) {
+    return {
+      borderClass: "border-l-pink-500",
+      badgeClass: "bg-pink-50 text-pink-700 border-pink-205",
+      btnClass: "bg-pink-600 hover:bg-pink-700 text-white shadow-sm hover:shadow-md shadow-pink-600/10",
+      icon: "🤝"
+    };
+  } else {
+    return {
+      borderClass: "border-l-indigo-500",
+      badgeClass: "bg-indigo-50 text-indigo-755 border-indigo-200",
+      btnClass: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-md shadow-indigo-600/10",
+      icon: "📈"
+    };
+  }
+};
+
 export default function Internships() {
   const [internships, setInternships] = useState<Internship[]>([]);
   const [user, setUser] = useState<UserSession | null>(null);
@@ -105,75 +173,83 @@ export default function Internships() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((item) => (
-              <div key={item.id} className="glass-card rounded-3xl p-6 flex flex-col justify-between h-full group relative overflow-hidden">
-                <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-indigo-500/5 blur-xl pointer-events-none group-hover:bg-indigo-500/10 transition-all" />
-                <div>
-                  {/* Category & Duration */}
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="inline-flex items-center gap-1 rounded-md bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-600">
-                      <Tag className="h-3 w-3" />
-                      {item.category}
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-xs text-zinc-400 font-medium">
-                      <Clock className="h-3 w-3" />
-                      {item.duration}
-                    </span>
+            {filtered.map((item) => {
+              const theme = getTrackTheme(item.id);
+              return (
+                <div 
+                  key={item.id} 
+                  className={`bg-white border border-zinc-200 hover:border-zinc-300 rounded-3xl p-6 flex flex-col justify-between h-full group relative overflow-hidden border-l-4 hover:shadow-lg hover:scale-[1.01] transition-all duration-300 ${theme.borderClass}`}
+                >
+                  <div className="absolute right-4 top-4 text-2xl opacity-20 group-hover:opacity-40 transition-opacity">
+                    {theme.icon}
                   </div>
-
-                  {/* Title */}
-                  <h3 className="text-lg font-bold text-zinc-900 group-hover:text-indigo-600 transition-colors mb-2">
-                    {item.title}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-zinc-600 text-xs sm:text-sm line-clamp-3 leading-relaxed mb-4 font-light">
-                    {item.description}
-                  </p>
-
-                  {/* Requirements list */}
-                  {item.requirements && item.requirements.length > 0 && (
-                    <div className="mb-6">
-                      <span className="text-xs text-zinc-500 font-semibold uppercase tracking-wider block mb-2">Checklist:</span>
-                      <ul className="space-y-1.5">
-                        {item.requirements.slice(0, 3).map((req, idx) => (
-                          <li key={idx} className="text-xs text-zinc-500 flex items-start gap-1.5 font-light">
-                            <span className="h-1.5 w-1.5 rounded-full bg-indigo-500/60 mt-1.5 shrink-0" />
-                            <span className="line-clamp-1">{req}</span>
-                          </li>
-                        ))}
-                      </ul>
+                  <div>
+                    {/* Category & Duration */}
+                    <div className="flex items-center justify-between mb-4 pr-8">
+                      <span className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide ${theme.badgeClass}`}>
+                        <Tag className="h-3 w-3" />
+                        {item.category}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-xs text-zinc-400 font-bold font-mono">
+                        <Clock className="h-3 w-3 text-zinc-300" />
+                        {item.duration}
+                      </span>
                     </div>
-                  )}
-                </div>
 
-                {/* Card Action */}
-                <div className="mt-auto pt-4 border-t border-zinc-200/50 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-zinc-400 text-xs font-medium">
-                    <HelpCircle className="h-3.5 w-3.5" />
-                    <span>10 Questions • 40% to Pass</span>
+                    {/* Title */}
+                    <h3 className="text-lg font-bold text-zinc-900 group-hover:text-indigo-650 transition-colors mb-2 tracking-tight">
+                      {item.title}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-zinc-600 text-xs sm:text-sm line-clamp-3 leading-relaxed mb-4 font-normal font-sans">
+                      {item.description}
+                    </p>
+
+                    {/* Requirements list */}
+                    {item.requirements && item.requirements.length > 0 && (
+                      <div className="mb-6 pt-3 border-t border-zinc-100">
+                        <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block mb-2">Checklist Requirements:</span>
+                        <ul className="space-y-1.5">
+                          {item.requirements.slice(0, 3).map((req, idx) => (
+                            <li key={idx} className="text-xs text-zinc-500 flex items-start gap-1.5 font-normal">
+                              <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
+                              <span className="line-clamp-1">{req}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
-                  
-                  {user ? (
-                    <Link
-                      href="/student/dashboard"
-                      className="inline-flex items-center gap-1 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-600 px-3.5 py-2 text-xs font-bold hover:bg-indigo-600 hover:text-white transition-all shadow-sm active:scale-95 cursor-pointer"
-                    >
-                      Apply & Test
-                      <ArrowUpRight className="h-3.5 w-3.5" />
-                    </Link>
-                  ) : (
-                    <Link
-                      href="/auth/register"
-                      className="inline-flex items-center gap-1 rounded-xl bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-600 px-3.5 py-2 text-xs font-bold hover:text-zinc-800 transition-all active:scale-95 cursor-pointer"
-                    >
-                      Login to Test
-                      <ArrowUpRight className="h-3.5 w-3.5" />
-                    </Link>
-                  )}
+
+                  {/* Card Action */}
+                  <div className="mt-auto pt-4 border-t border-zinc-200/50 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-zinc-400 text-xs font-medium">
+                      <HelpCircle className="h-3.5 w-3.5" />
+                      <span>10 Questions • 40% to Pass</span>
+                    </div>
+                    
+                    {user ? (
+                      <Link
+                        href="/student/dashboard"
+                        className={`inline-flex items-center gap-1 rounded-xl px-3.5 py-2 text-xs font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer ${theme.btnClass}`}
+                      >
+                        Apply & Test
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                      </Link>
+                    ) : (
+                      <Link
+                        href="/auth/register"
+                        className={`inline-flex items-center gap-1 rounded-xl px-3.5 py-2 text-xs font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer ${theme.btnClass}`}
+                      >
+                        Apply & Test
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                      </Link>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>

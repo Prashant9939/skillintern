@@ -19,6 +19,8 @@ export default function Register() {
   const [universities, setUniversities] = useState<University[]>([]);
   const [colleges, setColleges] = useState<string[]>([]);
   const [isMockMode, setIsMockMode] = useState(false);
+  const [customUniversity, setCustomUniversity] = useState("");
+  const [customCollege, setCustomCollege] = useState("");
 
   useEffect(() => {
     setIsMockMode(!isSupabaseConfigured());
@@ -80,14 +82,19 @@ export default function Register() {
 
   useEffect(() => {
     if (formData.university) {
-      const selectedUniv = universities.find(u => u.name === formData.university);
-      if (selectedUniv) {
-        setColleges(selectedUniv.colleges);
-      } else {
+      if (formData.university === "Other") {
         setColleges([]);
+        setFormData(prev => ({ ...prev, college: "Other" }));
+      } else {
+        const selectedUniv = universities.find(u => u.name === formData.university);
+        if (selectedUniv) {
+          setColleges(selectedUniv.colleges);
+        } else {
+          setColleges([]);
+        }
+        // Reset college if university changes
+        setFormData(prev => ({ ...prev, college: "" }));
       }
-      // Reset college if university changes
-      setFormData(prev => ({ ...prev, college: "" }));
     } else {
       setColleges([]);
     }
@@ -148,6 +155,14 @@ export default function Register() {
       setError("Please fill in all academic details.");
       return false;
     }
+    if (formData.university === "Other" && !customUniversity.trim()) {
+      setError("Please write your University name.");
+      return false;
+    }
+    if (formData.college === "Other" && !customCollege.trim()) {
+      setError("Please write your College name.");
+      return false;
+    }
     setError("");
     return true;
   };
@@ -181,8 +196,8 @@ export default function Register() {
         formData.password,
         formData.fullName,
         formData.phoneNumber,
-        formData.college,
-        formData.university,
+        formData.college === "Other" ? customCollege : formData.college,
+        formData.university === "Other" ? customUniversity : formData.university,
         formData.course,
         formData.semester,
         formData.address,
@@ -668,6 +683,22 @@ export default function Register() {
                           </div>
                         </div>
 
+                        {formData.university === "Other" && (
+                          <div className="flex flex-col gap-1 mt-1">
+                            <label className="text-[10px] font-bold text-zinc-700 uppercase tracking-wider ml-1">Write your University Name *</label>
+                            <div className="relative">
+                              <Building2 className="absolute left-3.5 top-3 h-[18px] w-[18px] text-zinc-400" />
+                              <textarea
+                                required
+                                value={customUniversity}
+                                onChange={e => setCustomUniversity(e.target.value)}
+                                className="w-full pl-11 pr-4 py-2.5 min-h-[72px] text-sm bg-zinc-50 border border-zinc-300 focus:border-[#7C3AED] focus:ring-[4px] focus:ring-[#7C3AED]/15 rounded-[14px] outline-none text-zinc-800 transition-all duration-200 placeholder:text-zinc-400 resize-none"
+                                placeholder="Enter your full university name..."
+                              />
+                            </div>
+                          </div>
+                        )}
+
                         <div className="flex flex-col gap-1">
                           <label className="text-[10px] font-bold text-zinc-700 uppercase tracking-wider ml-1">College Name *</label>
                           <div className="relative">
@@ -683,6 +714,22 @@ export default function Register() {
                             <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
                           </div>
                         </div>
+
+                        {formData.college === "Other" && (
+                          <div className="flex flex-col gap-1 mt-1">
+                            <label className="text-[10px] font-bold text-zinc-700 uppercase tracking-wider ml-1">Write your College Name *</label>
+                            <div className="relative">
+                              <BookOpen className="absolute left-3.5 top-3 h-[18px] w-[18px] text-zinc-400" />
+                              <textarea
+                                required
+                                value={customCollege}
+                                onChange={e => setCustomCollege(e.target.value)}
+                                className="w-full pl-11 pr-4 py-2.5 min-h-[72px] text-sm bg-zinc-50 border border-zinc-300 focus:border-[#7C3AED] focus:ring-[4px] focus:ring-[#7C3AED]/15 rounded-[14px] outline-none text-zinc-800 transition-all duration-200 placeholder:text-zinc-400 resize-none"
+                                placeholder="Enter your full college or university name..."
+                              />
+                            </div>
+                          </div>
+                        )}
 
                         <div className="grid grid-cols-2 gap-4">
                           <div className="flex flex-col gap-1">

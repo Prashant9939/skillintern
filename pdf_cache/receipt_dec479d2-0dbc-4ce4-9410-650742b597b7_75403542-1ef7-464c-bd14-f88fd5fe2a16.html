@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
+<head><base href="http://localhost:3000/" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Payment Receipt - IQ Intern</title>
@@ -259,6 +259,57 @@
       }
     }
   </style>
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #1E293B;
+  background-color: #FFFFFF;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+.document-container {
+  padding: 40px;
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+}
+.certificate-container {
+  padding: 50px;
+  max-width: 900px;
+  margin: 0 auto;
+  border: 10px double #7C3AED;
+  border-radius: 16px;
+  text-align: center;
+  background-color: #FAFAF9;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+.title-heavy {
+  font-family: 'Cinzel', 'Georgia', serif;
+  color: #1E3A8A;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+th, td {
+  border: 1px solid #E2E8F0;
+  padding: 10px;
+  text-align: left;
+  font-size: 13px;
+}
+th {
+  background-color: #F8FAFC;
+  font-weight: bold;
+  color: #475569;
+}
+.text-center { text-align: center; }
+</style>
 </head>
 
 <body>
@@ -270,8 +321,8 @@
       </div>
       <div class="header-meta">
         <strong>Official Receipt</strong>
-        Date: {{issueDate}}<br />
-        Receipt ID: {{verificationId}}
+        Date: July 1, 2026<br />
+        Receipt ID: SI-MOCK-ID
       </div>
     </div>
 
@@ -282,19 +333,19 @@
       <div class="info-grid">
         <div class="info-card">
           <div class="info-label">Candidate Name</div>
-          <div class="info-value">{{studentName}}</div>
+          <div class="info-value">Shiwam Mishra</div>
         </div>
         <div class="info-card">
           <div class="info-label">Roll Number</div>
-          <div class="info-value">{{rollNumber}}</div>
+          <div class="info-value">12345</div>
         </div>
         <div class="info-card">
           <div class="info-label">College / Institution</div>
-          <div class="info-value">{{collegeName}}</div>
+          <div class="info-value">Sri Tridandi Dev Degree College Gautamnagar</div>
         </div>
         <div class="info-card">
           <div class="info-label">Program Track</div>
-          <div class="info-value">{{internshipName}}</div>
+          <div class="info-value">Digital Marketing</div>
         </div>
       </div>
 
@@ -317,12 +368,12 @@
                   issuance.</span>
               </td>
               <td style="text-align:center; font-weight:600;">1</td>
-              <td style="text-align:right;">{{amount}}</td>
-              <td style="text-align:right; font-weight:600;">{{amount}}</td>
+              <td style="text-align:right;"></td>
+              <td style="text-align:right; font-weight:600;"></td>
             </tr>
             <tr class="total-row">
               <td colspan="3" style="text-align:right;">Total Amount Paid:</td>
-              <td style="text-align:right;">{{amount}}</td>
+              <td style="text-align:right;"></td>
             </tr>
           </tbody>
         </table>
@@ -342,7 +393,7 @@
     <div class="footer">
       This is a computer-generated receipt and does not require a physical signature. For queries, contact <a
         href="mailto:support.iqintern@gmail.com">support.iqintern@gmail.com</a>.<br />
-      © {{currentYear}} IQ Intern Vocational Training Pvt. Ltd. All rights reserved.
+      ©  IQ Intern Vocational Training Pvt. Ltd. All rights reserved.
     </div>
   </div>
 </body>

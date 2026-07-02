@@ -239,6 +239,38 @@ const DEFAULT_INTERNSHIPS: Internship[] = [
     requirements: ["Innovative business planning logic", "2 Business Model Canvas Plans requirement", "Level: Intermediate"],
     duration: "120 Hrs",
     category: "Management",
+  },
+  {
+    id: "int-political",
+    title: "Political and Governance",
+    description: "Analyze public policy frameworks, governance systems, municipal compliance audits, and local leadership models.",
+    requirements: ["Basic understanding of civics & polity", "3 Policy Analysis Papers requirement", "Level: Intermediate"],
+    duration: "120 Hrs",
+    category: "Governance",
+  },
+  {
+    id: "int-tourism",
+    title: "Tourism & Hospitality",
+    description: "Develop operational and management insights into tourism marketing systems, hospitality guidelines, and destination itineraries.",
+    requirements: ["Basic hospitality and communication skills", "4 Destination Itinerary Audits requirement", "Level: Beginner"],
+    duration: "120 Hrs",
+    category: "Hospitality",
+  },
+  {
+    id: "int-skill-dev",
+    title: "Entrepreneurship Skill Development",
+    description: "Understand incubator structures, vocational skill development programs, scalable enterprise systems, and fundraising concepts.",
+    requirements: ["Fundamentals of business models", "3 Entrepreneurial Action Plans requirement", "Level: Intermediate"],
+    duration: "120 Hrs",
+    category: "Management",
+  },
+  {
+    id: "int-teacher-training",
+    title: "Teacher Training",
+    description: "Audit interactive educational pedagogy models, curriculum design templates, student performance diagnostics, and classroom management techniques.",
+    requirements: ["Interest in education and pedagogy", "5 Lesson Plan Audits requirement", "Level: Beginner to Intermediate"],
+    duration: "120 Hrs",
+    category: "Education",
   }
 ];
 
@@ -374,6 +406,54 @@ const DEFAULT_QUESTIONS: Record<string, Omit<Question, "id">[]> = {
     { internship_id: "int-entrepreneur", question_text: "What is the Value Proposition of a startup business model?", options: ["The calculated value of all corporate assets", "The unique, compelling value, benefits, and problem-solving a business promises to deliver to its consumers", "The stock market valuation price", "The salary packages offered to employees"], correct_option_index: 1 },
     { internship_id: "int-entrepreneur", question_text: "What is the term for a private startup company that reaches a market valuation of $1 billion or more?", options: ["Decacorn", "Unicorn", "Blue Chip", "Venture Lead"], correct_option_index: 1 },
     { internship_id: "int-entrepreneur", question_text: "What is the primary goal of Market Segmentation in customer discovery models?", options: ["To write database SQL indexing scripts", "To divide a broad consumer target market into specific subgroups sharing similar needs or traits", "To scale virtual machine size in cloud environments", "To hire marketing specialists for ad campaigns"], correct_option_index: 1 }
+  ],
+  "int-political": [
+    { internship_id: "int-political", question_text: "What is the primary purpose of a public policy framework?", options: ["Generate revenue", "Address societal problems systematically", "Limit legislative debate", "Appoint administrative staff"], correct_option_index: 1 },
+    { internship_id: "int-political", question_text: "Which branch of governance is primarily responsible for implementing laws?", options: ["Judiciary", "Legislature", "Executive", "Press"], correct_option_index: 2 },
+    { internship_id: "int-political", question_text: "In local governance, what is the role of a municipal council?", options: ["Drafting state constitutions", "Managing local urban services and regulations", "Deciding criminal appeals", "Managing central bank reserves"], correct_option_index: 1 },
+    { internship_id: "int-political", question_text: "What does the term 'separation of powers' refer to?", options: ["Dividing territory among states", "Allocating distinct duties to legislative, executive, and judicial branches", "Term limits for representatives", "Separating church and state"], correct_option_index: 1 },
+    { internship_id: "int-political", question_text: "Which index measures the public perception of corruption in a nation?", options: ["GDP Index", "Corruption Perceptions Index (CPI)", "Gini Coefficient", "Human Development Index"], correct_option_index: 1 },
+    { internship_id: "int-political", question_text: "What is a key objective of participatory governance?", options: ["Reducing citizen involvement", "Including citizens directly in decision-making processes", "Restricting local audits", "Increasing executive bureaucracy"], correct_option_index: 1 },
+    { internship_id: "int-political", question_text: "What document outlines the fundamental structure and laws of a democratic state?", options: ["Civil Code", "Constitution", "Executive Order", "Municipal Charter"], correct_option_index: 1 },
+    { internship_id: "int-political", question_text: "In public policy, what is 'agenda setting'?", options: ["Scheduling political campaign rallies", "Identifying issues that require government attention and action", "Drafting annual budgets", "Vetoing legislative bills"], correct_option_index: 1 },
+    { internship_id: "int-political", question_text: "Which administrative body handles general election oversight in a democracy?", options: ["Supreme Court", "Election Commission", "Ministry of Home Affairs", "Senate Committee"], correct_option_index: 1 },
+    { internship_id: "int-political", question_text: "What is the main focus of public administration?", options: ["Maximizing private corporate profits", "Managing public programs and enforcing government policies", "Conducting military operations", "Directing television broadcasts"], correct_option_index: 1 }
+  ],
+  "int-tourism": [
+    { internship_id: "int-tourism", question_text: "What is the primary focus of sustainable tourism?", options: ["Maximizing tourist traffic capacity", "Minimizing negative environmental and cultural impacts", "Building luxury resorts exclusively", "Reducing local labor wages"], correct_option_index: 1 },
+    { internship_id: "int-tourism", question_text: "What does 'hospitality management' primarily deal with?", options: ["Overseeing hospital services", "Managing guest experiences in hotels, restaurants, and events", "Directing agricultural production", "Designing automotive engines"], correct_option_index: 1 },
+    { internship_id: "int-tourism", question_text: "Which of the following is considered a primary tourism attraction?", options: ["Airport terminal", "National park or historic monument", "High-speed highway", "Local convenience store"], correct_option_index: 1 },
+    { internship_id: "int-tourism", question_text: "What is 'ecotourism'?", options: ["Virtual travel simulations", "Responsible travel to natural areas that conserves the environment", "Industrial business conferences", "Amusement park operations"], correct_option_index: 1 },
+    { internship_id: "int-tourism", question_text: "What does the term 'destination marketing' aim to achieve?", options: ["Promoting a specific location to attract visitors", "Selling aviation software to airlines", "Managing hotel room cleanliness logs", "Importing foreign consumer goods"], correct_option_index: 0 },
+    { internship_id: "int-tourism", question_text: "Which sector of hospitality manages food and beverage services?", options: ["Front Office", "F&B Division", "Housekeeping", "Maintenance"], correct_option_index: 1 },
+    { internship_id: "int-tourism", question_text: "What is an itinerary?", options: ["A passport application form", "A detailed plan or route of a journey", "A hotel baggage receipt", "An airline baggage claim tag"], correct_option_index: 1 },
+    { internship_id: "int-tourism", question_text: "What does ADR stand for in hotel financial metrics?", options: ["Average Daily Rate", "Adjusted Deposit Ratio", "Annual Delivery Revenue", "Asset Depreciation Rate"], correct_option_index: 0 },
+    { internship_id: "int-tourism", question_text: "What is a principal reason for travel agency bookings?", options: ["To issue passports", "To package flights, lodging, and tours for customers", "To control customs entry checkpoints", "To design national parks"], correct_option_index: 1 },
+    { internship_id: "int-tourism", question_text: "Which international organization is dedicated to promoting global tourism?", options: ["UNWTO", "UNESCO", "UNICEF", "WHO"], correct_option_index: 0 }
+  ],
+  "int-skill-dev": [
+    { internship_id: "int-skill-dev", question_text: "What is the main objective of a vocational skill development program?", options: ["Teaching theoretical research methodologies", "Equipping individuals with practical, job-ready technical skills", "Standardizing university entrance exams", "Funding major infrastructure projects"], correct_option_index: 1 },
+    { internship_id: "int-skill-dev", question_text: "In entrepreneurship, what is a startup incubator?", options: ["A medical facility for infants", "An organization that supports early-stage startups with resources and mentoring", "A tax collection authority", "A corporate legal defense firm"], correct_option_index: 1 },
+    { internship_id: "int-skill-dev", question_text: "What is the purpose of a Business Model Canvas?", options: ["Creating artistic designs for marketing", "Describing, designing, and pivoting a business logic visually", "Logging daily sales receipts", "Auditing public tax filings"], correct_option_index: 1 },
+    { internship_id: "int-skill-dev", question_text: "What does the term 'scaling up' mean for a business?", options: ["Reducing the physical size of offices", "Expanding operations and growing revenue while keeping costs low", "Selling off assets to pay debts", "Closing down local branches"], correct_option_index: 1 },
+    { internship_id: "int-skill-dev", question_text: "What is 'venture capital'?", options: ["A loan from a commercial bank", "Funding provided by investors to startups with high growth potential", "Personal savings of the founder", "Government welfare grants"], correct_option_index: 1 },
+    { internship_id: "int-skill-dev", question_text: "In skill training, what is 'on-the-job training' (OJT)?", options: ["Reading textbooks in a library", "Learning specific work skills while performing the actual job", "Attending virtual webinar lectures", "Passing a written entrance exam"], correct_option_index: 1 },
+    { internship_id: "int-skill-dev", question_text: "What does MVP stand for in product development?", options: ["Most Valuable Player", "Minimum Viable Product", "Maximum Value Proposal", "Market Validation Phase"], correct_option_index: 1 },
+    { internship_id: "int-skill-dev", question_text: "What is the role of mentorship in incubator programs?", options: ["Directly managing daily client code", "Providing expert guidance, advice, and industry connections", "Funding the entire startup capital", "Filing corporate tax returns"], correct_option_index: 1 },
+    { internship_id: "int-skill-dev", question_text: "Which factor is crucial for validating a product-market fit?", options: ["A large initial marketing budget", "Consistent customer demand and usage of the product", "A complex technical architecture", "A high premium retail price"], correct_option_index: 1 },
+    { internship_id: "int-skill-dev", question_text: "What is 'bootstrapping' in startup finance?", options: ["Taking massive bank loans", "Funding a business using only personal finances and initial operating revenue", "Attracting foreign direct investment", "Merging with a larger corporation"], correct_option_index: 1 }
+  ],
+  "int-teacher-training": [
+    { internship_id: "int-teacher-training", question_text: "What does 'pedagogy' refer to in education?", options: ["The study of child development metrics", "The method and practice of teaching", "The administrative management of schools", "The design of school classrooms"], correct_option_index: 1 },
+    { internship_id: "int-teacher-training", question_text: "What is the primary purpose of a school lesson plan?", options: ["To record teacher attendance logs", "To outline the structure and objectives of a class session", "To grade student homework submissions", "To request educational funding"], correct_option_index: 1 },
+    { internship_id: "int-teacher-training", question_text: "What does formative assessment aim to do?", options: ["Determine a student's final course grade", "Monitor student learning to provide ongoing feedback and improve teaching", "Standardize state-level school rankings", "Test memory under strict exam conditions"], correct_option_index: 1 },
+    { internship_id: "int-teacher-training", question_text: "Which teaching model focuses on students reviewing video lectures at home and doing active exercises in class?", options: ["Traditional lecturing", "Flipped Classroom", "Direct Instruction", "Rote memorization"], correct_option_index: 1 },
+    { internship_id: "int-teacher-training", question_text: "What is 'classroom management' primarily concerned with?", options: ["Purchasing school desks and chairs", "Creating a productive, safe, and organized learning environment", "Managing school funding allocations", "Designing the school curriculum layout"], correct_option_index: 1 },
+    { internship_id: "int-teacher-training", question_text: "What is 'active learning'?", options: ["Listening to lectures passively", "Engaging students directly in activities, discussions, and problem-solving", "Doing physical education drills", "Reviewing textbook notes at night"], correct_option_index: 1 },
+    { internship_id: "int-teacher-training", question_text: "What does IEP stand for in special education?", options: ["Individualized Education Program", "Integrated Educational Pedagogy", "Interactive Evaluation Proposal", "Institution-wide Education Plan"], correct_option_index: 0 },
+    { internship_id: "int-teacher-training", question_text: "In educational psychology, what does 'scaffolding' mean?", options: ["Building steel supports for classrooms", "Providing temporary support to students as they learn new concepts", "Testing students without preparation", "Grouping students by age levels"], correct_option_index: 1 },
+    { internship_id: "int-teacher-training", question_text: "Which learning style focuses on processing information through visual charts, diagrams, and maps?", options: ["Auditory", "Visual", "Kinesthetic", "Read/Write"], correct_option_index: 1 },
+    { internship_id: "int-teacher-training", question_text: "What is a rubrics sheet used for in evaluations?", options: ["To schedule class timings", "To define scoring criteria and performance standards for assignments", "To record school expenses", "To register teacher training hours"], correct_option_index: 1 }
   ]
 };
 
@@ -1643,7 +1723,7 @@ function getFallbackTemplateHtml(code: string, name: string): string {
     body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; color: #333; line-height: 1.6; background-color: #f9f9f9; margin: 0; }
     .card { background: white; padding: 40px; max-width: 700px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     h1 { color: #7c3aed; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; font-size: 24px; text-align: center; }
-    .meta { display: grid; grid-template-cols: 1fr 1fr; gap: 16px; margin: 20px 0; padding: 16px; background: #f5f3ff; border-radius: 8px; border: 1px solid #ddd6fe; }
+    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; padding: 16px; background: #f5f3ff; border-radius: 8px; border: 1px solid #ddd6fe; }
     .meta div { font-size: 13px; }
     .score-box { text-align: center; margin: 30px 0; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; }
     .score { font-size: 48px; font-weight: 800; color: #7c3aed; }
@@ -1683,7 +1763,7 @@ function getFallbackTemplateHtml(code: string, name: string): string {
     body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; color: #333; line-height: 1.6; background-color: #f9f9f9; margin: 0; }
     .card { background: white; padding: 40px; max-width: 800px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     h1 { color: #0284c7; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; font-size: 24px; text-align: center; }
-    .meta { display: grid; grid-template-cols: 1fr 1fr; gap: 16px; margin: 20px 0; padding: 16px; background: #e0f2fe; border-radius: 8px; border: 1px solid #bae6fd; }
+    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; padding: 16px; background: #e0f2fe; border-radius: 8px; border: 1px solid #bae6fd; }
     .meta div { font-size: 13px; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th { background: #f8fafc; border: 1px solid #cbd5e1; text-align: center; padding: 10px; font-size: 11px; color: #475569; }
@@ -1735,7 +1815,7 @@ function getFallbackTemplateHtml(code: string, name: string): string {
     body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; color: #333; line-height: 1.6; background-color: #f9f9f9; margin: 0; }
     .card { background: white; padding: 40px; max-width: 800px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     h1 { color: #1e3a8a; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; font-size: 24px; text-align: center; }
-    .meta { display: grid; grid-template-cols: 1fr 1fr; gap: 16px; margin: 24px 0; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9; }
+    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9; }
     .meta div { font-size: 13px; }
     .content { margin-top: 24px; font-size: 14px; }
     .signature-area { display: flex; justify-content: space-between; margin-top: 60px; }
@@ -1778,7 +1858,7 @@ function getFallbackTemplateHtml(code: string, name: string): string {
     body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; color: #333; line-height: 1.6; background-color: #f9f9f9; margin: 0; }
     .card { background: white; padding: 40px; max-width: 900px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     h1 { color: #4f46e5; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; font-size: 24px; text-align: center; }
-    .meta { display: grid; grid-template-cols: 1fr 1fr; gap: 16px; margin: 20px 0; padding: 16px; background: #faf5ff; border-radius: 8px; border: 1px solid #f3e8ff; }
+    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; padding: 16px; background: #faf5ff; border-radius: 8px; border: 1px solid #f3e8ff; }
     .meta div { font-size: 13px; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th { background: #f8fafc; border: 1px solid #cbd5e1; text-align: center; padding: 10px; font-size: 11px; color: #475569; }
@@ -1831,7 +1911,7 @@ function getFallbackTemplateHtml(code: string, name: string): string {
     body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; color: #333; line-height: 1.6; background-color: #f9f9f9; margin: 0; }
     .card { background: white; padding: 40px; max-width: 800px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     h1 { color: #e11d48; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; font-size: 24px; text-align: center; }
-    .meta { display: grid; grid-template-cols: 1fr 1fr; gap: 16px; margin: 20px 0; padding: 16px; background: #fff1f2; border-radius: 8px; border: 1px solid #ffe4e6; }
+    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; padding: 16px; background: #fff1f2; border-radius: 8px; border: 1px solid #ffe4e6; }
     .meta div { font-size: 13px; }
     .section-title { font-weight: bold; margin-top: 20px; font-size: 14px; color: #e11d48; border-bottom: 1px solid #ffe4e6; padding-bottom: 4px; }
     .q-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }

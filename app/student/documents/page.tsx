@@ -78,11 +78,33 @@ export default function DocumentsPage() {
     loadData();
   }, []);
 
-  // Compute enrolled tracks (excluding general admissions if any)
+  // Scroll & Highlight first document card based on URL parameters
+  useEffect(() => {
+    if (!loading && typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const highlightId = params.get("highlight");
+      if (highlightId) {
+        // Small timeout to guarantee DOM has fully rendered
+        setTimeout(() => {
+          const cardElement = document.getElementById(`doc-card-${highlightId}`);
+          if (cardElement) {
+            cardElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            // Add a premium flashing highlight class/style (Tailwind ring and scale)
+            cardElement.classList.add("ring-4", "ring-indigo-500", "scale-[1.02]", "transition-all", "duration-500");
+            setTimeout(() => {
+              cardElement.classList.remove("ring-4", "ring-indigo-500", "scale-[1.02]");
+            }, 3000);
+          }
+        }, 200);
+      }
+    }
+  }, [loading]);
+
+  // Compute enrolled tracks (excluding general admissions & unused credits)
   const enrolledTrackIds = Array.from(new Set([
     ...payments.map(p => p.internship_id),
     ...results.map(r => r.internship_id)
-  ])).filter(id => id && id !== "general");
+  ])).filter(id => id && id !== "general" && id !== "general_credit_unused");
 
   // Automatically select the first track as default
   useEffect(() => {
@@ -91,34 +113,75 @@ export default function DocumentsPage() {
     }
   }, [enrolledTrackIds, selectedTrackId]);
 
-  // Handle simulated generation process for UI presentation
-  const handleDownloadClick = (doc: InternDocument, downloadUrl: string) => {
-    const docId = doc.id;
-    // Set to generating state first
-    setDocSimulatedStates(prev => ({ ...prev, [docId]: 'generating' }));
-
-    setTimeout(() => {
-      // 90% chance of success, 10% chance of failure for realistic demonstration
-      const isSuccess = Math.random() > 0.1;
-      if (isSuccess) {
-        setDocSimulatedStates(prev => ({ ...prev, [docId]: null }));
-        window.open(downloadUrl, "_blank");
-      } else {
-        setDocSimulatedStates(prev => ({ ...prev, [docId]: 'failed' }));
-      }
-    }, 1500);
+  // Handle opening preview page in a new window synchronously to avoid popup blockers
+  const handleDownloadClick = (doc: InternDocument) => {
+    const templateTypeMap: Record<string, string> = {
+      offer_letter: 'offer_letter',
+      payment_receipt: 'receipt',
+      attendance_record: 'attendance_sheet',
+      assessment_marksheet: 'marksheet',
+      internship_report: 'project_report',
+      internship_certificate: 'certificate'
+    };
+    const apiTemplateType = templateTypeMap[doc.id] || doc.id;
+    const previewUrl = `/student/documents/preview?templateType=${apiTemplateType}&studentId=${user?.id}&internshipId=${activeTrackId}`;
+    window.open(previewUrl, "_blank");
   };
 
-  const handleRetryClick = (doc: InternDocument, downloadUrl: string) => {
-    handleDownloadClick(doc, downloadUrl);
+  const handleRetryClick = (doc: InternDocument) => {
+    handleDownloadClick(doc);
   };
 
   if (loading) {
     return (
-      <div className="flex h-96 items-center justify-center">
-        <div className="text-center space-y-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#5B5FF7] border-t-transparent mx-auto" />
-          <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider animate-pulse">Loading documents...</p>
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 space-y-8 animate-pulse">
+        {/* Header Selector Row Skeleton */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 sm:px-6 rounded-2xl border border-zinc-200 shadow-xs h-20">
+          <div className="space-y-2">
+            <div className="h-4 bg-zinc-200 rounded w-32" />
+            <div className="h-3 bg-zinc-200 rounded w-64" />
+          </div>
+        </div>
+
+        {/* Main Document Center Hero Block Skeleton */}
+        <div className="relative overflow-hidden rounded-[28px] border border-zinc-200/80 bg-gradient-to-br from-[#1E293B] to-[#0F172A] p-6 sm:p-8 text-white shadow-xl h-48 flex items-center">
+          <div className="space-y-3 flex-grow text-left">
+            <div className="h-4 bg-white/25 rounded w-24" />
+            <div className="h-8 bg-white/25 rounded w-1/3" />
+            <div className="h-5 bg-white/25 rounded w-20 mt-2" />
+          </div>
+        </div>
+
+        {/* Tri-Metrics Info Grid Skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-xs flex items-center justify-between h-20">
+              <div className="space-y-2 text-left flex-grow">
+                <div className="h-3 bg-zinc-200 rounded w-1/4" />
+                <div className="h-4 bg-zinc-200 rounded w-1/2" />
+              </div>
+              <div className="h-9 w-9 bg-zinc-100 rounded-full shrink-0" />
+            </div>
+          ))}
+        </div>
+
+        {/* Documents Grid Section Skeleton */}
+        <div className="space-y-4">
+          <div className="h-4 bg-zinc-200 rounded w-48 text-left" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between min-h-[170px]">
+                <div className="flex gap-3.5 items-start">
+                  <div className="h-11 w-11 rounded-xl bg-zinc-100 shrink-0" />
+                  <div className="space-y-2 flex-grow text-left">
+                    <div className="h-4 bg-zinc-200 rounded w-2/3" />
+                    <div className="h-3 bg-zinc-200 rounded w-1/3" />
+                  </div>
+                </div>
+                <div className="h-10 bg-zinc-100 rounded-xl mt-6 w-full" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -411,6 +474,7 @@ export default function DocumentsPage() {
             return (
               <div
                 key={doc.id}
+                id={`doc-card-${doc.id}`}
                 className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:shadow-md hover:border-zinc-300 transition-all duration-300 text-left min-h-[170px] relative group"
               >
                 {/* Header Row: Icon & Status Check */}
@@ -462,7 +526,7 @@ export default function DocumentsPage() {
                 <div className="mt-6 pt-4 border-t border-zinc-150">
                   {isReady && (
                     <button
-                      onClick={() => handleDownloadClick(doc, doc.downloadUrl!)}
+                      onClick={() => handleDownloadClick(doc)}
                       className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 text-xs transition-all active:scale-97 shadow-sm shadow-indigo-600/10 cursor-pointer"
                     >
                       <Download className="h-3.5 w-3.5" />
@@ -489,7 +553,7 @@ export default function DocumentsPage() {
                   )}
                   {isFailed && (
                     <button
-                      onClick={() => handleRetryClick(doc, `/api/documents/download?templateType=${doc.id === 'payment_receipt' ? 'receipt' : doc.id === 'internship_certificate' ? 'certificate' : doc.id === 'attendance_record' ? 'attendance_sheet' : doc.id === 'internship_report' ? 'project_report' : doc.id === 'assessment_marksheet' ? 'marksheet' : doc.id}&studentId=${user?.id}&internshipId=${activeTrackId}`)}
+                      onClick={() => handleRetryClick(doc)}
                       className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 px-4 text-xs transition-all active:scale-97 shadow-sm shadow-rose-600/10 cursor-pointer"
                     >
                       <RefreshCw className="h-3.5 w-3.5" />

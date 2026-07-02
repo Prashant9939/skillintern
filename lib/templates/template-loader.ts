@@ -12,6 +12,75 @@ export function getSlugFromTitle(title: string): string {
   return clean.replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 
+export const REPORT_TEMPLATE_MAPPING: Record<string, string> = {
+  "int-datasci": "internship_data_science.html",
+  "data science": "internship_data_science.html",
+  "data-science": "internship_data_science.html",
+
+  "int-python": "internship_python.html",
+  "python programming": "internship_python.html",
+  "python development": "internship_python.html",
+
+  "int-web-dev": "internship_web_development.html",
+  "web development": "internship_web_development.html",
+  "web dev": "internship_web_development.html",
+  "web-development": "internship_web_development.html",
+
+  "int-java": "internship_java.html",
+  "java development": "internship_java.html",
+  "java-development": "internship_java.html",
+
+  "int-ai": "internship_artificial_intelligence.html",
+  "artificial intelligence": "internship_artificial_intelligence.html",
+  "artificial-intelligence": "internship_artificial_intelligence.html",
+
+  "int-ml": "internship_machine_learning.html",
+  "machine learning": "internship_machine_learning.html",
+  "machine-learning": "internship_machine_learning.html",
+
+  "int-cybersec": "internship_cyber_security.html",
+  "cyber security": "internship_cyber_security.html",
+  "cyber-security": "internship_cyber_security.html",
+
+  "int-cloud": "internship_cloud_computing.html",
+  "cloud computing": "internship_cloud_computing.html",
+  "cloud-computing": "internship_cloud_computing.html",
+
+  "int-uiux": "internship_ui_ux.html",
+  "ui/ux design": "internship_ui_ux.html",
+  "ui/ux product design": "internship_ui_ux.html",
+  "ui-ux": "internship_ui_ux.html",
+
+  "int-digimark": "internship_digital_marketing.html",
+  "digital marketing": "internship_digital_marketing.html",
+  "digital-marketing": "internship_digital_marketing.html",
+
+  "int-hr": "internship_hr.html",
+  "human resources (hr)": "internship_hr.html",
+  "human resources": "internship_hr.html",
+
+  "int-bizanalytics": "internship_business_analytics.html",
+  "business analytics": "internship_business_analytics.html",
+  "business-analytics": "internship_business_analytics.html",
+
+  "int-political": "internship_political_and_governance.html",
+  "political and governance": "internship_political_and_governance.html",
+  "political-and-governance": "internship_political_and_governance.html",
+
+  "int-tourism": "internship_tourism.html",
+  "tourism": "internship_tourism.html",
+  "tourism & hospitality": "internship_tourism.html",
+  "tourism-and-hospitality": "internship_tourism.html",
+
+  "int-skill-dev": "internship_skill_development.html",
+  "entrepreneurship skill development": "internship_skill_development.html",
+  "entrepreneurship-skill-development": "internship_skill_development.html",
+
+  "int-teacher-training": "internship_teacher_trainning.html",
+  "teacher training": "internship_teacher_trainning.html",
+  "teacher-training": "internship_teacher_trainning.html"
+};
+
 /**
  * Loads a document template.
  * Order of lookup:
@@ -65,8 +134,33 @@ export async function loadTemplate(
 
   // 2. Fall back to local filesystem templates
   const rootDir = process.cwd();
-  const templatePath = path.join(rootDir, 'public', 'templates', 'internships', internshipSlug, `${cleanCode}.html`);
-  const defaultPath = path.join(rootDir, 'public', 'templates', 'default', `${cleanCode}.html`);
+  
+  let targetFile = `${cleanCode}.html`;
+  if (cleanCode === 'project_report' || cleanCode === 'internship_report') {
+    const key = (internshipId || '').toLowerCase().trim();
+    const slugKey = internshipSlug.toLowerCase().replace(/-/g, ' ');
+    const mapped = REPORT_TEMPLATE_MAPPING[key] || REPORT_TEMPLATE_MAPPING[slugKey] || REPORT_TEMPLATE_MAPPING[internshipSlug.toLowerCase()];
+    
+    if (mapped) {
+      const mappedPath = path.join(rootDir, 'public', 'templates', 'default', mapped);
+      if (fs.existsSync(mappedPath)) {
+        targetFile = mapped;
+      } else {
+        const fallbackDefaultPath = path.join(rootDir, 'public', 'templates', 'default', 'internship_default.html');
+        if (fs.existsSync(fallbackDefaultPath)) {
+          targetFile = 'internship_default.html';
+        }
+      }
+    } else {
+      const fallbackDefaultPath = path.join(rootDir, 'public', 'templates', 'default', 'internship_default.html');
+      if (fs.existsSync(fallbackDefaultPath)) {
+        targetFile = 'internship_default.html';
+      }
+    }
+  }
+
+  const templatePath = path.join(rootDir, 'public', 'templates', 'internships', internshipSlug, targetFile);
+  const defaultPath = path.join(rootDir, 'public', 'templates', 'default', targetFile);
 
   try {
     if (fs.existsSync(templatePath)) {
@@ -285,7 +379,7 @@ function getFallbackTemplateHtml(code: string): string {
     body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; background-color: #ffffff; margin: 0; }
     .card { background: white; padding: 40px; max-width: 800px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
     h1 { color: #0284c7; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; font-size: 22px; text-align: center; }
-    .meta { display: grid; grid-template-cols: 1fr 1fr; gap: 16px; margin: 20px 0; padding: 16px; background: #f0f9ff; border-radius: 8px; border: 1px solid #bae6fd; }
+    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; padding: 16px; background: #f0f9ff; border-radius: 8px; border: 1px solid #bae6fd; }
     .meta div { font-size: 13px; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th { background: #f8fafc; border: 1px solid #cbd5e1; text-align: center; padding: 10px; font-size: 11px; color: #475569; }
@@ -339,7 +433,7 @@ function getFallbackTemplateHtml(code: string): string {
     body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; background-color: #ffffff; margin: 0; }
     .card { background: white; padding: 40px; max-width: 700px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
     h1 { color: #4f46e5; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; font-size: 22px; text-align: center; }
-    .meta { display: grid; grid-template-cols: 1fr 1fr; gap: 16px; margin: 20px 0; padding: 16px; background: #faf5ff; border-radius: 8px; border: 1px solid #e9d5ff; }
+    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; padding: 16px; background: #faf5ff; border-radius: 8px; border: 1px solid #e9d5ff; }
     .meta div { font-size: 13px; }
     .score-box { text-align: center; margin: 30px 0; padding: 25px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; }
     .score { font-size: 48px; font-weight: 800; color: #4f46e5; }
@@ -383,7 +477,7 @@ function getFallbackTemplateHtml(code: string): string {
     body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; background-color: #ffffff; margin: 0; }
     .card { background: white; padding: 40px; max-width: 800px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
     h1 { color: #059669; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; font-size: 22px; text-align: center; }
-    .meta { display: grid; grid-template-cols: 1fr 1fr; gap: 16px; margin: 20px 0; padding: 16px; background: #ecfdf5; border-radius: 8px; border: 1px solid #a7f3d0; }
+    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; padding: 16px; background: #ecfdf5; border-radius: 8px; border: 1px solid #a7f3d0; }
     .meta div { font-size: 13px; }
     .section-title { font-size: 14px; font-weight: bold; color: #059669; margin-top: 25px; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
     .text-content { font-size: 12.5px; color: #475569; text-align: justify; margin-bottom: 12px; }

@@ -30,6 +30,74 @@ import {
 import Link from "next/link";
 import Script from "next/script";
 
+const getTrackTheme = (trackId: string) => {
+  const cleanId = trackId.toLowerCase();
+  if (cleanId.includes("web-dev") || cleanId.includes("webdev")) {
+    return {
+      borderClass: "border-l-emerald-500",
+      badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      btnClass: "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm hover:shadow-md shadow-emerald-600/10",
+      icon: "🌐"
+    };
+  } else if (cleanId.includes("frontend")) {
+    return {
+      borderClass: "border-l-sky-500",
+      badgeClass: "bg-sky-50 text-sky-700 border-sky-200",
+      btnClass: "bg-sky-600 hover:bg-sky-700 text-white shadow-sm hover:shadow-md shadow-sky-600/10",
+      icon: "🎨"
+    };
+  } else if (cleanId.includes("python")) {
+    return {
+      borderClass: "border-l-indigo-500",
+      badgeClass: "bg-indigo-50 text-indigo-700 border-indigo-200",
+      btnClass: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-md shadow-indigo-600/10",
+      icon: "🐍"
+    };
+  } else if (cleanId.includes("data") || cleanId.includes("analytics") || cleanId.includes("datasci")) {
+    return {
+      borderClass: "border-l-amber-500",
+      badgeClass: "bg-amber-50 text-amber-700 border-amber-200",
+      btnClass: "bg-amber-600 hover:bg-amber-700 text-white shadow-sm hover:shadow-md shadow-amber-600/10",
+      icon: "📊"
+    };
+  } else if (cleanId.includes("ai") || cleanId.includes("ml") || cleanId.includes("artificial")) {
+    return {
+      borderClass: "border-l-violet-500",
+      badgeClass: "bg-violet-50 text-violet-700 border-violet-200",
+      btnClass: "bg-violet-600 hover:bg-violet-700 text-white shadow-sm hover:shadow-md shadow-violet-600/10",
+      icon: "🤖"
+    };
+  } else if (cleanId.includes("cyber") || cleanId.includes("security")) {
+    return {
+      borderClass: "border-l-red-500",
+      badgeClass: "bg-red-50 text-red-700 border-red-205",
+      btnClass: "bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow-md shadow-red-600/10",
+      icon: "🔒"
+    };
+  } else if (cleanId.includes("cloud")) {
+    return {
+      borderClass: "border-l-cyan-500",
+      badgeClass: "bg-cyan-50 text-cyan-700 border-cyan-205",
+      btnClass: "bg-cyan-600 hover:bg-cyan-700 text-white shadow-sm hover:shadow-md shadow-cyan-600/10",
+      icon: "☁️"
+    };
+  } else if (cleanId.includes("hr")) {
+    return {
+      borderClass: "border-l-pink-500",
+      badgeClass: "bg-pink-50 text-pink-700 border-pink-205",
+      btnClass: "bg-pink-600 hover:bg-pink-700 text-white shadow-sm hover:shadow-md shadow-pink-600/10",
+      icon: "🤝"
+    };
+  } else {
+    return {
+      borderClass: "border-l-indigo-500",
+      badgeClass: "bg-indigo-50 text-indigo-755 border-indigo-200",
+      btnClass: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-md shadow-indigo-600/10",
+      icon: "📈"
+    };
+  }
+};
+
 export default function AvailableInternships() {
   const [user, setUser] = useState<UserSession | null>(null);
   const [internships, setInternships] = useState<Internship[]>([]);
@@ -420,116 +488,156 @@ export default function AvailableInternships() {
       </div>
 
       {/* Internships Grid */}
-      {filteredInternships.length === 0 ? (
-        <div className="text-center py-20 border border-zinc-200 rounded-3xl bg-white shadow-sm hover:shadow-md transition-all duration-300">
-          <Briefcase className="h-10 w-10 mx-auto text-zinc-400 mb-3" />
-          <p className="text-sm text-zinc-700 font-bold">No internship tracks match your criteria.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {filteredInternships.map((track) => {
-            // Check status of this track
-            const trackResults = results.filter((r) => r.internship_id === track.id);
-            const passed = trackResults.some((r) => r.passed);
-            const latestAttempt = trackResults[0];
+      {(() => {
+        const selectedTrackId = paidTracks.find(id => id !== "general_credit_unused");
+        const sortedInternships = [...filteredInternships].sort((a, b) => {
+          const aSelected = a.id === selectedTrackId;
+          const bSelected = b.id === selectedTrackId;
+          if (aSelected && !bSelected) return -1;
+          if (!aSelected && bSelected) return 1;
+          return 0;
+        });
 
-            return (
-              <div 
-                key={track.id}
-                className={`glass-card bg-white border border-zinc-200 rounded-3xl p-6 flex flex-col justify-between transition-all duration-300 group relative overflow-hidden border-l-4 hover:shadow-lg hover:border-zinc-350 hover:scale-[1.005] ${
-                  passed 
-                    ? "border-l-emerald-500 hover:border-l-emerald-600" 
-                    : latestAttempt 
-                      ? "border-l-red-500 hover:border-l-red-600" 
-                      : "border-l-indigo-500 hover:border-l-indigo-600"
-                }`}
-              >
-                {/* Visual Status Indicator Glow */}
-                {passed && (
-                  <div className="absolute top-0 right-0 h-20 w-20 rounded-full bg-emerald-500/5 blur-lg pointer-events-none" />
-                )}
+        if (sortedInternships.length === 0) {
+          return (
+            <div className="text-center py-20 border border-zinc-200 rounded-3xl bg-white shadow-sm hover:shadow-md transition-all duration-300">
+              <Briefcase className="h-10 w-10 mx-auto text-zinc-400 mb-3" />
+              <p className="text-sm text-zinc-700 font-bold">No internship tracks match your criteria.</p>
+            </div>
+          );
+        }
 
-                <div className="space-y-4">
-                  {/* Category & Status */}
-                  <div className="flex justify-between items-start gap-2">
-                    <span className="text-[10px] font-bold text-indigo-650 bg-indigo-50 border border-indigo-150 px-2.5 py-1 rounded-lg uppercase tracking-wider">
-                      {track.category}
-                    </span>
-                    
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {sortedInternships.map((track) => {
+              // Check status of this track
+              const trackResults = results.filter((r) => r.internship_id === track.id);
+              const passed = trackResults.some((r) => r.passed);
+              const latestAttempt = trackResults[0];
+              const theme = getTrackTheme(track.id);
+
+              return (
+                <div 
+                  key={track.id}
+                  className={`bg-white border border-zinc-200 hover:border-zinc-300 rounded-3xl p-6 flex flex-col justify-between transition-all duration-300 group relative overflow-hidden border-l-4 hover:shadow-lg hover:scale-[1.005] ${theme.borderClass}`}
+                >
+                  <div className="absolute right-4 top-4 text-2xl opacity-20 group-hover:opacity-40 transition-opacity">
+                    {theme.icon}
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* Category & Status */}
+                    <div className="flex justify-between items-start gap-2 pr-8">
+                      <span className={`text-[10px] font-bold border px-2.5 py-1 rounded-lg uppercase tracking-wider ${theme.badgeClass}`}>
+                        {track.category}
+                      </span>
+                      
+                      {passed ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-550/10 border border-emerald-200 px-3 py-1 text-[10px] font-bold text-emerald-700 font-mono">
+                          Passed
+                        </span>
+                      ) : latestAttempt ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-250 px-3 py-1 text-[10px] font-bold text-red-650 font-mono">
+                          Failed ({latestAttempt.percentage}%)
+                        </span>
+                      ) : null}
+                    </div>
+
+                    {/* Title & Description */}
+                    <div>
+                      <h3 className="text-lg font-bold text-zinc-900 group-hover:text-indigo-655 transition-colors tracking-tight">
+                        {track.title}
+                      </h3>
+                      <p className="text-zinc-600 text-xs mt-2 leading-relaxed font-normal font-sans">
+                        {track.description}
+                      </p>
+                    </div>
+
+                    {/* Track Duration Details */}
+                    <div className={`flex items-center gap-2 text-xs font-bold border p-2.5 rounded-xl w-fit ${theme.badgeClass}`}>
+                      <Clock className="h-3.5 w-3.5" />
+                      <span>Duration: <span className="text-zinc-900 font-extrabold">{track.duration || "3 Months"}</span></span>
+                    </div>
+
+                    {/* Requirements List */}
+                    {track.requirements && track.requirements.length > 0 && (
+                      <div className="space-y-2 pt-2 border-t border-zinc-150">
+                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Requirements:</span>
+                        <ul className="grid grid-cols-1 gap-1.5">
+                          {track.requirements.map((req, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-[11px] text-zinc-650 leading-relaxed font-normal font-sans">
+                              <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
+                              {req}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bottom Actions */}
+                  <div className="pt-6 mt-6 border-t border-zinc-150 flex items-center justify-between gap-4">
                     {passed ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[10px] font-bold text-emerald-700 font-mono">
-                        Passed
-                      </span>
-                    ) : latestAttempt ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-250 px-3 py-1 text-[10px] font-bold text-red-650 font-mono">
-                        Failed ({latestAttempt.percentage}%)
-                      </span>
-                    ) : null}
+                      <div className="text-[11px] text-emerald-600 font-bold flex items-center gap-1.5">
+                        <CheckCircle className="h-4 w-4 text-emerald-500" />
+                        Assessment Passed
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-zinc-500 font-semibold font-sans">
+                        Requires passing threshold of 40%
+                      </div>
+                    )}
+
+                    {(() => {
+                      const hasSelectedThis = paidTracks.includes(track.id);
+                      const hasPaidUnused = paidTracks.includes("general_credit_unused");
+                      
+                      if (hasSelectedThis) {
+                        return (
+                          <button
+                            onClick={() => setSelectedInternship(track)}
+                            className={`flex items-center justify-center gap-1.5 rounded-xl px-5 py-2 text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95 ${
+                              passed
+                                ? "bg-white border border-zinc-200 text-zinc-700 hover:bg-slate-50 hover:border-zinc-300"
+                                : theme.btnClass
+                            }`}
+                          >
+                            <Play className="h-3.5 w-3.5" />
+                            {passed ? "Retake Assessment" : "Take Assessment"}
+                          </button>
+                        );
+                      } else if (hasPaidUnused) {
+                        return (
+                          <button
+                            onClick={() => handleSelectInternship(track.id)}
+                            disabled={payingId !== null}
+                            className={`flex items-center justify-center gap-1.5 rounded-xl px-5 py-2 text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95 disabled:opacity-50 ${theme.btnClass}`}
+                          >
+                            <Play className="h-3.5 w-3.5" />
+                            {payingId === track.id ? "Selecting..." : "Select Internship"}
+                          </button>
+                        );
+                      } else {
+                        return (
+                          <button
+                            onClick={() => handlePayAndStart(track)}
+                            disabled={payingId !== null}
+                            className={`flex items-center justify-center gap-1.5 rounded-xl px-5 py-2 text-xs font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md disabled:opacity-50 ${theme.btnClass}`}
+                          >
+                            <CreditCard className="h-3.5 w-3.5" />
+                            {payingId === track.id ? "Processing..." : `Pay ₹${settings.assessment_fee}`}
+                          </button>
+                        );
+                      }
+                    })()}
                   </div>
 
-                  {/* Title & Description */}
-                  <div>
-                    <h3 className="text-lg font-bold text-zinc-900 group-hover:text-indigo-650 transition-colors tracking-tight">
-                      {track.title}
-                    </h3>
-                    <p className="text-zinc-700 text-xs mt-2 leading-relaxed font-semibold font-sans">
-                      {track.description}
-                    </p>
-                  </div>
-
-                  {/* Track Duration Details */}
-                  <div className="flex items-center gap-2 text-xs font-bold text-indigo-650 bg-indigo-50 border border-indigo-150 p-2.5 rounded-xl w-fit">
-                    <Clock className="h-3.5 w-3.5 text-indigo-500" />
-                    <span>Duration: <span className="text-zinc-900 font-extrabold">{track.duration || "3 Months"}</span></span>
-                  </div>
-
-                  {/* Requirements List */}
-                  {track.requirements && track.requirements.length > 0 && (
-                    <div className="space-y-2 pt-2 border-t border-zinc-150">
-                      <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider block">Requirements:</span>
-                      <ul className="grid grid-cols-1 gap-1.5">
-                        {track.requirements.map((req, idx) => (
-                          <li key={idx} className="flex items-start gap-2 text-[11px] text-zinc-800 leading-relaxed font-semibold font-sans">
-                            <span className="h-1.5 w-1.5 rounded-full bg-indigo-350 mt-1.5 shrink-0" />
-                            {req}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
                 </div>
-
-                {/* Bottom Actions */}
-                <div className="pt-6 mt-6 border-t border-zinc-150 flex items-center justify-between gap-4">
-                  {passed ? (
-                    <div className="text-[11px] text-emerald-600 font-bold flex items-center gap-1.5">
-                      <CheckCircle className="h-4 w-4" />
-                      Assessment Passed
-                    </div>
-                  ) : (
-                    <div className="text-[10px] text-zinc-700 font-bold">
-                      Requires passing threshold of 40%
-                    </div>
-                  )}
-
-                  <button
-                    onClick={() => setSelectedInternship(track)}
-                    className={`flex items-center justify-center gap-1.5 rounded-xl px-5 py-2 text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95 ${
-                      passed
-                        ? "bg-white border border-zinc-200 text-zinc-700 hover:bg-slate-50 hover:border-zinc-300"
-                        : "bg-indigo-600 text-white hover:bg-indigo-750 shadow-md shadow-indigo-650/10"
-                    }`}
-                  >
-                    <Play className="h-3.5 w-3.5" />
-                    {passed ? "Retake Assessment" : "Take Assessment"}
-                  </button>
-                </div>
-
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        );
+      })()}
 
       {/* GUIDELINES RULES MODAL */}
       {selectedInternship && (

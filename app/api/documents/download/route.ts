@@ -3,6 +3,8 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
 import { loadTemplate, getSlugFromTitle } from '@/lib/templates/template-loader';
 import { renderTemplate } from '@/lib/templates/template-renderer';
 import puppeteer from 'puppeteer';
+import fs from 'fs';
+import path from 'path';
 
 export async function GET(req: Request) {
   try {
@@ -165,55 +167,143 @@ export async function GET(req: Request) {
       issueDate: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }),
     };
 
-    // 3. Load & Render HTML template
-    const slug = getSlugFromTitle(internshipTitle);
-    const templateHtml = await loadTemplate(templateType, slug, internshipId);
-    let finalHtml = renderTemplate(templateHtml, renderData);
-
-    // Inject base tag for relative images to load through host server origin in Puppeteer
-    const { origin } = new URL(req.url);
-    if (finalHtml.includes('<head>')) {
-      finalHtml = finalHtml.replace('<head>', `<head><base href="${origin}/" />`);
-    } else {
-      finalHtml = `<base href="${origin}/" />` + finalHtml;
+    // 3. Cache Check and HTML/PDF Generation
+    const format = searchParams.get('format') || 'pdf';
+    const cacheDir = path.join(process.cwd(), 'pdf_cache');
+    
+    // Ensure cache directory exists
+    try {
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+    } catch (dirError) {
+      console.error('Failed to create cache directory:', dirError);
     }
 
-    // 4. Generate PDF using Puppeteer
-    let pdfBuffer: Buffer;
-    let browser: any = null;
-    try {
-      browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        headless: true,
-      });
-      const page = await browser.newPage();
-      await page.setContent(finalHtml, { waitUntil: 'networkidle0' });
-      pdfBuffer = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        margin: {
-          top: '0mm',
-          bottom: '0mm',
-          left: '0mm',
-          right: '0mm',
+    const htmlCacheFilePath = path.join(cacheDir, `${templateType}_${studentId}_${internshipId}.html`);
+    const pdfCacheFilePath = path.join(cacheDir, `${templateType}_${studentId}_${internshipId}.pdf`);
+
+    if (format === 'html') {
+      // Load, Render and Cache HTML
+      const slug = getSlugFromTitle(internshipTitle);
+      const templateHtml = await loadTemplate(templateType, slug, internshipId);
+      let finalHtml = renderTemplate(templateHtml, renderData);
+
+      // Inject base tag for relative images to load through host server origin in Puppeteer
+      const { origin } = new URL(req.url);
+      if (finalHtml.includes('<head>')) {
+        finalHtml = finalHtml.replace('<head>', `<head><base href="${origin}/" />`);
+      } else {
+        finalHtml = `<base href="${origin}/" />` + finalHtml;
+      }
+
+      // Cache HTML to disk
+      try {
+        fs.writeFileSync(htmlCacheFilePath, finalHtml, 'utf-8');
+      } catch (htmlCacheError) {
+        console.error('Failed to cache HTML:', htmlCacheError);
+      }
+
+      return new Response(finalHtml, {
+        headers: { 
+          'Content-Type': 'text/html',
+          'Content-Disposition': `inline; filename="${templateType}_${studentId}.html"`
         },
       });
-    } catch (pdfError: any) {
-      console.error('Puppeteer generation failed, returning HTML fallback instead:', pdfError);
-      return new Response(finalHtml, {
-        headers: { 'Content-Type': 'text/html' },
-      });
-    } finally {
-      if (browser) {
-        await browser.close();
+    }
+
+    // Else: format === 'pdf'
+    let pdfBuffer: Buffer | null = null;
+    let fromCache = false;
+
+    // Check if PDF cache already exists
+    if (fs.existsSync(pdfCacheFilePath)) {
+      try {
+        pdfBuffer = fs.readFileSync(pdfCacheFilePath);
+        fromCache = true;
+      } catch (cacheError) {
+        console.error('Failed to read from PDF cache:', cacheError);
       }
     }
 
-    // 5. Send PDF
-    return new Response(new Uint8Array(pdfBuffer), {
+    if (!fromCache) {
+      let finalHtml = '';
+      
+      // Try to read from HTML cache first
+      if (fs.existsSync(htmlCacheFilePath)) {
+        try {
+          finalHtml = fs.readFileSync(htmlCacheFilePath, 'utf-8');
+        } catch (htmlReadError) {
+          console.error('Failed to read HTML cache:', htmlReadError);
+        }
+      }
+
+      // If HTML cache was not found or failed to read, regenerate it
+      if (!finalHtml) {
+        const slug = getSlugFromTitle(internshipTitle);
+        const templateHtml = await loadTemplate(templateType, slug, internshipId);
+        finalHtml = renderTemplate(templateHtml, renderData);
+
+        const { origin } = new URL(req.url);
+        if (finalHtml.includes('<head>')) {
+          finalHtml = finalHtml.replace('<head>', `<head><base href="${origin}/" />`);
+        } else {
+          finalHtml = `<base href="${origin}/" />` + finalHtml;
+        }
+
+        // Cache the newly generated HTML for future use
+        try {
+          fs.writeFileSync(htmlCacheFilePath, finalHtml, 'utf-8');
+        } catch (htmlCacheError) {
+          console.error('Failed to cache HTML:', htmlCacheError);
+        }
+      }
+
+      // Generate PDF using Puppeteer from finalHtml
+      let browser: any = null;
+      try {
+        browser = await puppeteer.launch({
+          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          headless: true,
+        });
+        const page = await browser.newPage();
+        await page.setContent(finalHtml, { waitUntil: 'networkidle0' });
+        const generatedPdf = await page.pdf({
+          format: 'A4',
+          printBackground: true,
+          margin: {
+            top: '0mm',
+            bottom: '0mm',
+            left: '0mm',
+            right: '0mm',
+          },
+        });
+        pdfBuffer = Buffer.from(generatedPdf);
+
+        // Write PDF to cache
+        try {
+          fs.writeFileSync(pdfCacheFilePath, pdfBuffer);
+        } catch (writeError) {
+          console.error('Failed to write PDF to cache:', writeError);
+        }
+      } catch (pdfError: any) {
+        console.error('Puppeteer generation failed, returning HTML fallback instead:', pdfError);
+        return new Response(finalHtml, {
+          headers: { 'Content-Type': 'text/html' },
+        });
+      } finally {
+        if (browser) {
+          await browser.close();
+        }
+      }
+    }
+
+    // Return the generated or cached PDF
+    const dispositionParam = searchParams.get('disposition') === 'inline' ? 'inline' : 'attachment';
+    return new Response(new Uint8Array(pdfBuffer!), {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${templateType}_${studentId}.pdf"`,
+        'Content-Disposition': `${dispositionParam}; filename="${templateType}_${studentId}.pdf"`,
       },
     });
 

@@ -71,7 +71,7 @@ function renderDocument(templateHtml: string, profile: any, internshipTitle: str
   const payment = payments.find(
     (p) => p.internship_id === result?.internship_id && p.status === "completed"
   );
-  
+
   let joiningDate = new Date();
   if (payment) {
     joiningDate = new Date(payment.created_at);
@@ -635,7 +635,7 @@ export default function StudentDashboard() {
 
   return (
     <div className="space-y-10 relative z-10 animate-fade-in text-zinc-800 bg-[#FAFAFC] pb-10">
-      
+
       {/* Welcome Banner Section */}
       <section className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-left">
         <div>
@@ -645,7 +645,7 @@ export default function StudentDashboard() {
           </h2>
           <p className="text-zinc-450 text-sm mt-1.5 font-light">Track your progress and continue your learning journey.</p>
         </div>
-        <button 
+        <button
           onClick={() => setShowAnnouncementDrawer(true)}
           className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#5B5FF7]/20 text-[#5B5FF7] bg-[#5B5FF7]/5 hover:bg-[#5B5FF7]/10 transition-all font-bold text-xs cursor-pointer shadow-sm shrink-0"
         >
@@ -661,7 +661,7 @@ export default function StudentDashboard() {
 
       {/* Bento Statistics Grid */}
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        
+
         {/* Card 1: Active Track */}
         {dataLoading ? (
           <div className="bg-white border border-zinc-150/80 rounded-[20px] p-6 shadow-xs flex flex-col justify-between h-[180px] animate-pulse">
@@ -695,8 +695,8 @@ export default function StudentDashboard() {
               {activeTrackDetails[0] && (
                 <div className="mt-3">
                   <div className="w-full bg-zinc-100 h-2 rounded-full overflow-hidden">
-                    <div 
-                      className="bg-[#5B5FF7] h-full rounded-full transition-all duration-500" 
+                    <div
+                      className="bg-[#5B5FF7] h-full rounded-full transition-all duration-500"
                       style={{ width: `${activeTrackDetails[0].passed ? 100 : Math.max(30, activeTrackDetails[0].percentage)}%` }}
                     />
                   </div>
@@ -810,7 +810,7 @@ export default function StudentDashboard() {
 
       {/* Two Column Layout: Recent Activity & Upcoming Tasks */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
+
         {/* Left Column: Recent Activity */}
         <div className="bg-white border border-zinc-150/80 rounded-[20px] p-6 shadow-xs text-left">
           <div className="flex justify-between items-center mb-6">
@@ -922,7 +922,7 @@ export default function StudentDashboard() {
       {showAnnouncementDrawer && (
         <div className="fixed inset-0 z-50 overflow-hidden animate-fade-in">
           {/* Backdrop overlay */}
-          <div 
+          <div
             className="absolute inset-0 bg-zinc-900/40 backdrop-blur-xs transition-opacity"
             onClick={() => setShowAnnouncementDrawer(false)}
           />
@@ -956,9 +956,8 @@ export default function StudentDashboard() {
               <div className="px-6 pt-4 pb-2 border-b border-zinc-100 flex gap-4">
                 <button
                   onClick={() => setAnnouncementTab("unread")}
-                  className={`pb-2 text-xs font-bold transition-all relative cursor-pointer ${
-                    announcementTab === "unread" ? "text-[#5B5FF7]" : "text-zinc-450 hover:text-zinc-700"
-                  }`}
+                  className={`pb-2 text-xs font-bold transition-all relative cursor-pointer ${announcementTab === "unread" ? "text-[#5B5FF7]" : "text-zinc-450 hover:text-zinc-700"
+                    }`}
                 >
                   Unread ({announcements.filter(a => a.active && !readAnnouncementIds.includes(a.id)).length})
                   {announcementTab === "unread" && (
@@ -967,9 +966,8 @@ export default function StudentDashboard() {
                 </button>
                 <button
                   onClick={() => setAnnouncementTab("history")}
-                  className={`pb-2 text-xs font-bold transition-all relative cursor-pointer ${
-                    announcementTab === "history" ? "text-[#5B5FF7]" : "text-zinc-450 hover:text-zinc-700"
-                  }`}
+                  className={`pb-2 text-xs font-bold transition-all relative cursor-pointer ${announcementTab === "history" ? "text-[#5B5FF7]" : "text-zinc-450 hover:text-zinc-700"
+                    }`}
                 >
                   History ({announcements.length})
                   {announcementTab === "history" && (
@@ -1004,9 +1002,8 @@ export default function StudentDashboard() {
                     return (
                       <div
                         key={ann.id}
-                        className={`bg-white border rounded-2xl p-5 shadow-xs relative transition-all hover:shadow-md ${
-                          isUnread ? "border-indigo-100 ring-2 ring-indigo-500/5" : "border-zinc-150 opacity-90"
-                        }`}
+                        className={`bg-white border rounded-2xl p-5 shadow-xs relative transition-all hover:shadow-md ${isUnread ? "border-indigo-100 ring-2 ring-indigo-500/5" : "border-zinc-150 opacity-90"
+                          }`}
                       >
                         {/* Glow indicator for new announcements */}
                         {isUnread && (
@@ -1016,13 +1013,12 @@ export default function StudentDashboard() {
                         <div className="text-left space-y-2">
                           <div className="flex flex-wrap items-center gap-2">
                             <span
-                              className={`text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
-                                ann.priority === "high"
+                              className={`text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-full ${ann.priority === "high"
                                   ? "bg-rose-100 text-rose-700 border border-rose-200"
                                   : ann.priority === "medium"
-                                  ? "bg-amber-100 text-amber-700 border border-amber-200"
-                                  : "bg-blue-100 text-blue-750 border border-blue-200"
-                              }`}
+                                    ? "bg-amber-100 text-amber-700 border border-amber-200"
+                                    : "bg-blue-100 text-blue-750 border border-blue-200"
+                                }`}
                             >
                               {ann.priority}
                             </span>
